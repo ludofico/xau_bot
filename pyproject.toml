@@ -1,0 +1,69 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xauusd-strategy"
+version = "0.1.0"
+description = "Aggressive XAUUSD trading strategy with ML enhancement"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Trading Bot", email = "bot@trading.local"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "xgboost>=2.0.0",
+    "lightgbm>=4.0.0",
+    "optuna>=3.5.0",
+    "ta>=0.10.0",
+    "scikit-learn>=1.4.0",
+    "yfinance>=0.2.0",
+    "pyyaml>=6.0",
+    "loguru>=0.7.0",
+    "plotly>=5.18.0",
+    "schedule>=1.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "black>=24.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.8.0",
+    "jupyter>=1.0.0",
+]
+telegram = [
+    "python-telegram-bot>=21.0",
+]
+
+[project.scripts]
+xauusd-backtest = "xauusd_strategy.cli:run_backtest"
+xauusd-live = "xauusd_strategy.cli:run_live"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true

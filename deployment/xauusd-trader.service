@@ -1,0 +1,15 @@
+[Unit]
+Description=XAUUSD Nuclear Trader
+After=network.target
+
+[Service]
+Type=simple
+User=ludo
+WorkingDirectory=/home/ludo/trading
+ExecStart=/home/ludo/trading/run_live.sh
+Restart=always
+RestartSec=10
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

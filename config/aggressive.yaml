@@ -1,0 +1,93 @@
+# Aggressive Growth Configuration for XAUUSD
+# Target: €250 → €500-700/month
+metaapi:
+  enabled: false
+  token: "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI0MTlmYTM1Nzg3ZjdmOGVmYmMwNzM2ODVjN2I4NTJhNyIsImFjY2Vzc1J1bGVzIjpbeyJpZCI6InRyYWRpbmctYWNjb3VudC1tYW5hZ2VtZW50LWFwaSIsIm1ldGhvZHMiOlsidHJhZGluZy1hY2NvdW50LW1hbmFnZW1lbnQtYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbIio6JFVTRVJfSUQkOioiXX0seyJpZCI6Im1ldGFhcGktcmVzdC1hcGkiLCJtZXRob2RzIjpbIm1ldGFhcGktYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbIio6JFVTRVJfSUQkOioiXX0seyJpZCI6Im1ldGFhcGktcnBjLWFwaSIsIm1ldGhvZHMiOlsibWV0YWFwaS1hcGk6d3M6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbIio6JFVTRVJfSUQkOioiXX0seyJpZCI6Im1ldGFhcGktcmVhbC10aW1lLXN0cmVhbWluZy1hcGkiLCJtZXRob2RzIjpbIm1ldGFhcGktYXBpOndzOnB1YmxpYzoqOioiXSwicm9sZXMiOlsicmVhZGVyIiwid3JpdGVyIl0sInJlc291cmNlcyI6WyIqOiRVU0VSX0lEJDoqIl19LHsiaWQiOiJtZXRhc3RhdHMtYXBpIiwibWV0aG9kcyI6WyJtZXRhc3RhdHMtYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbIio6JFVTRVJfSUQkOioiXX0seyJpZCI6InJpc2stbWFuYWdlbWVudC1hcGkiLCJtZXRob2RzIjpbInJpc2stbWFuYWdlbWVudC1hcGk6cmVzdDpwdWJsaWM6KjoqIl0sInJvbGVzIjpbInJlYWRlciIsIndyaXRlciJdLCJyZXNvdXJjZXMiOlsiKjokVVNFUl9JRCQ6KiJdfSx7ImlkIjoiY29weWZhY3RvcnktYXBpIiwibWV0aG9kcyI6WyJjb3B5ZmFjdG9yeS1hcGk6cmVzdDpwdWJsaWM6KjoqIl0sInJvbGVzIjpbInJlYWRlciIsIndyaXRlciJdLCJyZXNvdXJjZXMiOlsiKjokVVNFUl9JRCQ6KiJdfSx7ImlkIjoibXQtbWFuYWdlci1hcGkiLCJtZXRob2RzIjpbIm10LW1hbmFnZXItYXBpOnJlc3Q6ZGVhbGluZzoqOioiLCJtdC1tYW5hZ2VyLWFwaTpyZXN0OnB1YmxpYzoqOioiXSwicm9sZXMiOlsicmVhZGVyIiwid3JpdGVyIl0sInJlc291cmNlcyI6WyIqOiRVU0VSX0lEJDoqIl19LHsiaWQiOiJiaWxsaW5nLWFwaSIsIm1ldGhvZHMiOlsiYmlsbGluZy1hcGk6cmVzdDpwdWJsaWM6KjoqIl0sInJvbGVzIjpbInJlYWRlciJdLCJyZXNvdXJjZXMiOlsiKjokVVNFUl9JRCQ6KiJdfV0sImlnbm9yZVJhdGVMaW1pdHMiOmZhbHNlLCJ0b2tlbklkIjoiMjAyMTAyMTMiLCJpbXBlcnNvbmF0ZWQiOmZhbHNlLCJyZWFsVXNlcklkIjoiNDE5ZmEzNTc4N2Y3ZjhlZmJjMDczNjg1YzdiODUyYTciLCJpYXQiOjE3NjgzMTE4MzUsImV4cCI6MTc3NjA4NzgzNX0.AaCKwGP-xUZj4u1Vb1_g7XtavMYtrsHiftXjFdp-HLzcVy0cFcLRE7KynxBDrFKw_5JDy7C1rbwBjiTChHV35HTL0KOEsUCbqelCKTP9S7gApgy_tJ40a_ucjnF6Oo3Brs3wtB-tGp-1JwNjtso18TJ5bEIRC-k7e2H61fge_odkZ9QntDl363oo7lBE5TCvfh7lA57pOhDmmkVaCf7Nz8KfyFo8OUVIcPZB0h5mCWvYYCG1jjKzm2VStSKr99xjvs0Qdp-IyEy_EbRvY1wHr_GgDvKVMxj4bH9XfmcM6ofW0VxQ92EN1m-lJF8ncrwnuN1AsxYOfaLShzQtTEr0pNqpFojOgOQ29vQDZKPvFeqSfWKaIfiD5JJcwmcu_Oos3crX7bp2jpH8EB5DLVFkUsRb3o-pdpop5ZWYrvK4h06VNTjyOIEdG02dU_kYlsbF7eadBEgXbzxuX_m8pCq4ClKYnDLVlD-D_v_zdafJcI2eLufzbpINEpsYksOEggeg66ferZ4T1ZrQFJbiXL5ZtbiM0-Apj9q3tK_tsEkgUHymwsAr46Tp8cURK7DaXOy2xlfbWnQtxlRh6ISDtmM2LpmK0WqVJA6afis02KVwsm55D_mPdtBejLaNosxO1fzHE2luqmdf5vYXiZgMX9xV9it7aXVjdNQ8greU7M2uywg"
+  account_id: ""
+
+account:
+  initial_balance: 250
+  currency: EUR
+  leverage: 500
+  broker_type: ECN
+
+risk_management:
+  # Position Sizing (Ultra-Aggressive for 100% Monthly)
+  risk_per_trade_pct: 3.0          # Increased to 3%
+  max_risk_per_trade_pct: 5.0      # Cap at 5%
+  kelly_fraction: 0.5
+  
+  # Daily Limits
+  max_daily_drawdown_pct: 10.0     # Wider drawdown allowance
+  max_daily_profit_pct: 20.0       # Higher daily cap
+  max_open_positions: 3
+  max_trades_per_day: 10
+  
+  # Compounding
+  compound_frequency: daily
+  compound_after_profit_pct: 5.0
+
+strategy:
+  # Multi-Session Trading
+  sessions:
+    asian:
+      enabled: true
+      start: "00:00"
+      end: "07:00"
+      strategy: range_scalping
+      max_trades: 2
+      
+    london:
+      enabled: true
+      start: "08:00"
+      end: "12:00"
+      strategy: breakout
+      max_trades: 5                # Increased max trades
+      
+    ny:
+      enabled: true
+      start: "14:00"
+      end: "18:00"
+      strategy: momentum
+      max_trades: 5                # Increased max trades
+
+  # Entry Parameters
+  entry:
+    atr_period: 14
+    atr_min_multiplier: 0.5
+    roc_period: 5
+    roc_threshold: 0.10            # Lower threshold for more frequency
+    
+  # Exit Parameters - HIGH R:R (1:2)
+  # Essential for doubling account: Winners must pay for losers
+  exit:
+    sl_atr_multiplier: 1.2         # Tight SL
+    tp_atr_multiplier: 2.4         # 1:2 Risk:Reward
+    trailing_atr_multiplier: 0.8
+    breakeven_after_rr: 1.0
+
+costs:
+  spread_usd: 0.20                 # Optimistic ECN spread
+  slippage_usd: 0.10
+  commission_per_lot: 7.0
+
+ml_filter:
+  enabled: true
+  model_type: xgboost
+  probability_threshold: 0.60      # Lower threshold to allow volume
+  retrain_frequency: weekly
+
+# Advanced Level 2 & 3 AI
+advanced_ai: true
+
+# Open Source Mac Bridge (Set true to avoid MetaApi fees)
+use_socket_bridge: false
+
+# cTrader Open API (Mac Native - Recommended for Fusion Markets)
+ctrader:
+  enabled: true
+  client_id: "20387_LuSzT1nOeFSC5FwhySR048rLYPgcAt3e3zA8JwFC9iHNk9WPA5"
+  client_secret: "9pvGNR53AxgyftVlkSKF7BowvuxsVF32f4Hebi4BYCd1ij5R7h"
+  account_id: ""  # Your cTrader account ID (from Fusion)
+  access_token: ""  # Will be filled after OAuth
+  refresh_token: ""  # Will be filled after OAuth

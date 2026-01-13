@@ -1,0 +1,3 @@
+[console_scripts]
+xauusd-backtest = xauusd_strategy.cli:run_backtest
+xauusd-live = xauusd_strategy.cli:run_live

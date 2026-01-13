@@ -1,0 +1,289 @@
+Metadata-Version: 2.4
+Name: xauusd-strategy
+Version: 0.1.0
+Summary: Aggressive XAUUSD trading strategy with ML enhancement
+Author-email: Trading Bot <bot@trading.local>
+License: MIT
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Financial and Insurance Industry
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: pandas>=2.0.0
+Requires-Dist: numpy>=1.24.0
+Requires-Dist: xgboost>=2.0.0
+Requires-Dist: lightgbm>=4.0.0
+Requires-Dist: optuna>=3.5.0
+Requires-Dist: ta>=0.10.0
+Requires-Dist: scikit-learn>=1.4.0
+Requires-Dist: yfinance>=0.2.0
+Requires-Dist: pyyaml>=6.0
+Requires-Dist: loguru>=0.7.0
+Requires-Dist: plotly>=5.18.0
+Requires-Dist: schedule>=1.2.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.1.0; extra == "dev"
+Requires-Dist: black>=24.0.0; extra == "dev"
+Requires-Dist: ruff>=0.1.0; extra == "dev"
+Requires-Dist: mypy>=1.8.0; extra == "dev"
+Requires-Dist: jupyter>=1.0.0; extra == "dev"
+Provides-Extra: telegram
+Requires-Dist: python-telegram-bot>=21.0; extra == "telegram"
+
+# XAUUSD Aggressive Trading Strategy
+
+Sistema di trading algoritmico per XAUUSD (Oro) ottimizzato per la crescita aggressiva di account piccoli (€250 → €500-€1000/mese).
+
+## 🎯 Obiettivo
+
+**Target**: Trasformare €250 in €500-€1000 al mese con leva 1:500
+
+> ⚠️ **Avviso di Rischio**: Questo sistema usa parametri aggressivi con probabilità di ruin stimata del 15-30%. Testare sempre in demo prima dell'uso con capitale reale.
+
+## 🏗️ Architettura
+
+```
+src/xauusd_strategy/
+├── config/          # Configurazione e settings
+├── data/            # Data fetching, processing, features
+├── strategy/        # London Breakout strategy
+├── risk/            # Kelly criterion, position sizing, circuit breaker
+├── backtest/        # Engine, cost model, metrics
+├── ml/              # XGBoost filter, Optuna optimization
+└── utils/           # Logging, time utilities
+```
+
+## 🚀 Quick Start
+
+### Installazione
+
+```bash
+cd trading
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+pip install -e .
+```
+
+### Backtest Rapido
+
+```bash
+# Con dati yfinance (ultimi 60 giorni)
+python -m xauusd_strategy.run_backtest --mode aggressive
+
+# Con date specifiche
+python -m xauusd_strategy.run_backtest --start 2024-06-01 --end 2024-12-31
+
+# Walk-forward validation
+python -m xauusd_strategy.run_backtest --walk-forward
+```
+
+### Uso Programmatico
+
+```python
+from xauusd_strategy import Settings, LondonBreakoutStrategy
+from xauusd_strategy.data import DataFetcher
+from xauusd_strategy.backtest import BacktestEngine
+
+# Carica config aggressivo
+settings = Settings.aggressive()
+
+# Fetch dati
+fetcher = DataFetcher(source="yfinance")
+data = fetcher.fetch_recent(days=60, timeframe="5m")
+
+# Crea strategia
+strategy = LondonBreakoutStrategy(settings=settings)
+
+# Backtest
+engine = BacktestEngine(initial_balance=250, leverage=500)
+result = engine.run(data, strategy)
+engine.print_summary(result)
+```
+
+## 📊 Strategia: London Breakout
+
+### Logica
+
+1. **Asian Box** (00:00-07:00 CET): Calcola high/low della sessione asiatica
+2. **London Open** (08:00+ CET): Attendi apertura Londra
+3. **Entry**: Breakout del box con:
+   - ATR(14) > soglia dinamica
+   - ROC(5) > 0.15% (conferma momentum)
+4. **Exit**:
+   - Stop Loss: 1.2 × ATR
+   - Take Profit: 2.4 × ATR (R:R = 1:2)
+   - Trailing Stop: 0.8 × ATR dopo 1:1
+
+### Position Sizing
+
+- **Fractional Kelly**: 50% del Kelly calcolato
+- **Risk Base**: 2.5% per trade
+- **Max Risk**: 4% per trade (con ML filter ad alta probabilità)
+- **Anti-Martingale**: Riduce size dopo perdite consecutive
+
+## 🤖 ML Enhancement (XGBoost)
+
+Il filtro ML predice la probabilità che un segnale raggiunga il TP prima dello SL:
+
+```python
+from xauusd_strategy.ml import MLProbabilityFilter
+
+filter = MLProbabilityFilter(probability_threshold=0.55)
+filter.train(X_train, y_train)
+
+prob = filter.predict_single(signal_features)
+if prob > 0.55:
+    take_trade()
+```
+
+### Features Usate
+
+- Volatilità: ATR, ATR ratio, range asiatico
+- Momentum: ROC, slopes EMA
+- Sessione: ora, giorno, flag overlap
+- ML: RSI, Bollinger position, lag features
+
+## ⚙️ Configurazione
+
+### Presets
+
+| Preset | Risk/Trade | Target Mensile | Prob. Ruin |
+|--------|------------|----------------|------------|
+| `conservative` | 1-2% | €300-400 | ~5% |
+| `aggressive` | 2-3% | €500-700 | ~15% |
+| `ultra_aggressive` | 3-5% | €800-1000 | ~30% |
+
+### File YAML
+
+```yaml
+# config/aggressive.yaml
+account:
+  initial_balance: 250
+  leverage: 500
+  
+risk_management:
+  risk_per_trade_pct: 2.5
+  max_risk_per_trade_pct: 4.0
+  kelly_fraction: 0.5
+  max_daily_drawdown_pct: 8.0
+
+strategy:
+  entry:
+    atr_period: 14
+    roc_threshold: 0.15
+  exit:
+    sl_atr_multiplier: 1.2
+    tp_atr_multiplier: 2.4
+```
+
+## 🛡️ Risk Management
+
+### Circuit Breaker
+
+Blocca automaticamente il trading quando:
+- Daily DD > 8%
+- 5+ perdite consecutive
+- Equity < 50% del iniziale
+
+### Compound Manager
+
+```python
+from xauusd_strategy.risk import AggressiveCompoundManager
+
+manager = AggressiveCompoundManager(initial_balance=250)
+
+# Calcola size con compounding
+pos = manager.calculate_position_size(
+    entry_price=2000,
+    stop_loss_price=1990,
+    signal_probability=0.65
+)
+print(f"Lots: {pos['lots']}")
+
+# Aggiorna dopo trade
+manager.update_trade_result(pnl=12.50)
+
+# Proiezione mensile
+projection = manager.get_monthly_projection()
+print(f"Target €500 raggiungibile: {projection['target_500_achievable']}")
+```
+
+## 📈 Ottimizzazione con Optuna
+
+```python
+from xauusd_strategy.ml import StrategyOptimizer
+
+optimizer = StrategyOptimizer(
+    train_data=train_data,
+    test_data=test_data,
+    objective="sharpe"
+)
+
+best_params = optimizer.optimize(n_trials=100)
+print(best_params)
+```
+
+## 📁 Struttura dei File
+
+```
+trading/
+├── config/
+│   └── aggressive.yaml      # Config principale
+├── src/xauusd_strategy/
+│   ├── config/settings.py   # Dataclass configurazione
+│   ├── data/
+│   │   ├── fetcher.py       # yfinance, MT5, CSV
+│   │   ├── processor.py     # Cleaning, resampling
+│   │   └── features.py      # ATR, ROC, EMAs
+│   ├── strategy/
+│   │   ├── london_breakout.py  # Core strategy
+│   │   ├── signals.py       # Signal management
+│   │   └── filters.py       # Entry filters
+│   ├── risk/
+│   │   ├── kelly.py         # Kelly criterion
+│   │   ├── position_sizing.py
+│   │   ├── compound_manager.py
+│   │   └── circuit_breaker.py
+│   ├── backtest/
+│   │   ├── engine.py        # Backtest runner
+│   │   ├── costs.py         # Spread/slippage
+│   │   └── metrics.py       # Performance metrics
+│   ├── ml/
+│   │   ├── model.py         # XGBoost filter
+│   │   ├── features.py      # ML features
+│   │   └── optimizer.py     # Optuna
+│   └── run_backtest.py      # CLI entry point
+├── pyproject.toml
+├── requirements.txt
+└── README.md
+```
+
+## 🔧 Dipendenze
+
+- Python 3.10+
+- pandas, numpy
+- vectorbt (backtesting)
+- xgboost, lightgbm (ML)
+- optuna (optimization)
+- MetaTrader5 (live execution, optional)
+
+## 📊 Metriche Target
+
+| Metrica | Minimo | Target |
+|---------|--------|--------|
+| Monthly Return | 100%+ | 200%+ |
+| Win Rate | 50%+ | 55%+ |
+| Profit Factor | 1.5+ | 2.0+ |
+| Max Drawdown | < 25% | < 15% |
+| Sharpe Ratio | > 1.0 | > 1.5 |
+
+## ⚠️ Disclaimer
+
+Questo software è fornito a solo scopo educativo. Il trading di CFD su oro comporta un alto rischio di perdita del capitale. Non investire denaro che non puoi permetterti di perdere. I risultati passati non sono indicativi di risultati futuri.
+
+## 📜 License
+
+MIT License
