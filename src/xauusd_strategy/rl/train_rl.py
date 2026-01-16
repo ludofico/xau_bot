@@ -65,18 +65,58 @@ class EarlyStoppingCallback(BaseCallback):
 
 def fetch_extended_data() -> pd.DataFrame:
     """
-    Fetch 12 MONTHS of data using 1H timeframe.
-    yfinance allows up to 730 days for 1h data.
+    Fetch extended data for RL training.
+    
+    Priority:
+    1. MT5 Native: 6 months of M5 data (~35,000 bars) - Windows only
+    2. yfinance: 12 months of 1H data (~6,000 bars) - Cross-platform fallback
     """
+    end = datetime.now()
+    
+    # Try MT5 first (Windows server with MT5 installed)
+    try:
+        import MetaTrader5 as mt5
+        
+        if mt5.initialize():
+            logger.info("MT5 connected! Fetching 6 MONTHS of M5 data...")
+            
+            start = end - timedelta(days=180)  # 6 months
+            
+            # XAUUSD or Gold symbol (depends on broker)
+            symbols_to_try = ["XAUUSD", "GOLD", "XAUUSDm", "XAUUSD.a"]
+            
+            for symbol in symbols_to_try:
+                rates = mt5.copy_rates_range(symbol, mt5.TIMEFRAME_M5, start, end)
+                if rates is not None and len(rates) > 1000:
+                    df = pd.DataFrame(rates)
+                    df['time'] = pd.to_datetime(df['time'], unit='s')
+                    df.set_index('time', inplace=True)
+                    df.columns = [c.lower() for c in df.columns]
+                    
+                    # Rename tick_volume to volume if needed
+                    if 'tick_volume' in df.columns and 'volume' not in df.columns:
+                        df['volume'] = df['tick_volume']
+                    
+                    logger.info(f"MT5: Fetched {len(df)} bars of {symbol} M5 from {df.index[0]} to {df.index[-1]}")
+                    mt5.shutdown()
+                    return df
+            
+            logger.warning("MT5: No valid XAUUSD data found, trying yfinance...")
+            mt5.shutdown()
+        else:
+            logger.warning(f"MT5 init failed: {mt5.last_error()}")
+            
+    except ImportError:
+        logger.info("MT5 not available (not Windows), using yfinance fallback")
+    except Exception as e:
+        logger.warning(f"MT5 error: {e}, using yfinance fallback")
+    
+    # Fallback: yfinance 1H data (12 months)
     import yfinance as yf
     
-    logger.info("Fetching 12 MONTHS of 1H data from yfinance...")
+    logger.info("Fetching 12 MONTHS of 1H data from yfinance (fallback)...")
     
-    # Gold Futures (GC=F) or XAUUSD proxy
-    ticker = yf.Ticker("GC=F")
-    
-    # Fetch 12 months of 1H data
-    end = datetime.now()
+    ticker = yf.Ticker("GC=F")  # Gold Futures
     start = end - timedelta(days=365)
     
     df = ticker.history(start=start, end=end, interval="1h")
@@ -85,14 +125,12 @@ def fetch_extended_data() -> pd.DataFrame:
         logger.warning("1H data failed, trying daily...")
         df = ticker.history(start=start, end=end, interval="1d")
     
-    # Standardize column names
     df.columns = [c.lower() for c in df.columns]
     
-    # Remove timezone info for compatibility
     if df.index.tz is not None:
         df.index = df.index.tz_localize(None)
     
-    logger.info(f"Fetched {len(df)} bars from {df.index[0]} to {df.index[-1]}")
+    logger.info(f"yfinance: Fetched {len(df)} bars from {df.index[0]} to {df.index[-1]}")
     
     return df
 
