@@ -78,30 +78,41 @@ class XauUsdEnv(gym.Env):
         """Pre-compute normalized features once for efficiency."""
         df = self.df
         
-        df['returns'] = df['close'].pct_change().fillna(0)
+        # Check if robust features are already computed (from train_rl.py)
+        robust_cols = ['returns', 'trend', 'vol_regime', 'deviation', 'momentum']
+        has_robust = all(col in df.columns for col in robust_cols)
         
-        if 'atr_14' in df.columns:
-            df['atr_pct'] = df['atr_14'] / df['close']
+        if has_robust:
+            # Use pre-computed robust features
+            self.norm_cols = robust_cols
+            logger.info("Using robust features from training pipeline") if hasattr(self, 'logger') else None
         else:
-            df['atr_pct'] = (df['high'] - df['low']) / df['close']
+            # Compute basic features as fallback
+            df['returns'] = df['close'].pct_change().fillna(0)
+            
+            if 'atr_14' in df.columns:
+                df['atr_pct'] = df['atr_14'] / df['close']
+            else:
+                df['atr_pct'] = (df['high'] - df['low']) / df['close']
+            
+            if 'volume' in df.columns and df['volume'].std() > 0:
+                df['vol_norm'] = (df['volume'] - df['volume'].rolling(100).mean()) / (df['volume'].rolling(100).std() + 1e-8)
+                df['vol_norm'] = df['vol_norm'].fillna(0).clip(-3, 3)
+            else:
+                df['vol_norm'] = 0.0
+            
+            if 'rsi_14' in df.columns:
+                df['rsi_norm'] = (df['rsi_14'] - 50) / 50
+            else:
+                df['rsi_norm'] = 0.0
+            
+            df['momentum'] = df['close'].pct_change(5).fillna(0).clip(-0.05, 0.05) * 10
+            
+            self.norm_cols = ['returns', 'atr_pct', 'vol_norm', 'rsi_norm', 'momentum']
         
-        if 'volume' in df.columns and df['volume'].std() > 0:
-            df['vol_norm'] = (df['volume'] - df['volume'].rolling(100).mean()) / (df['volume'].rolling(100).std() + 1e-8)
-            df['vol_norm'] = df['vol_norm'].fillna(0).clip(-3, 3)
-        else:
-            df['vol_norm'] = 0.0
-        
-        if 'rsi_14' in df.columns:
-            df['rsi_norm'] = (df['rsi_14'] - 50) / 50
-        else:
-            df['rsi_norm'] = 0.0
-        
-        df['momentum'] = df['close'].pct_change(5).fillna(0).clip(-0.05, 0.05) * 10
-        
-        self.norm_cols = ['returns', 'atr_pct', 'vol_norm', 'rsi_norm', 'momentum']
-        
+        # Fill NaNs and clip for stability
         for col in self.norm_cols:
-            df[col] = df[col].fillna(0)
+            df[col] = df[col].fillna(0).clip(-10, 10)
         
         self.df = df
         

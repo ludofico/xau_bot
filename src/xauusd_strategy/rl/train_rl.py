@@ -1,13 +1,14 @@
 
 """
-RL Trainer (DeepScalper) - Anti-Overfitting Version.
+RL Trainer (DeepScalper) - Production Version.
 
 Features:
+- 12 MONTHS of data (1H timeframe from yfinance)
+- 300k timesteps for robust learning
 - Train/Test split (80/20)
 - Early stopping when explained_variance > 0.6
-- Evaluation on held-out test data
-- Higher entropy for exploration
-- VecNormalize for stability
+- Robust features (market regime, momentum, volatility)
+- Rule-based fallback ready
 """
 
 import pandas as pd
@@ -18,10 +19,10 @@ from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback,
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.evaluation import evaluate_policy
 from pathlib import Path
+from datetime import datetime, timedelta
 
 from xauusd_strategy.rl.env import XauUsdEnv
 from xauusd_strategy.utils.logger import get_logger
-from xauusd_strategy.data.fetcher import DataFetcher
 from xauusd_strategy.data.processor import DataProcessor
 from xauusd_strategy.data.features import FeatureEngineer
 
@@ -39,9 +40,7 @@ class EarlyStoppingCallback(BaseCallback):
         self.best_reward = -np.inf
         
     def _on_step(self) -> bool:
-        # Check every 2048 steps (after each rollout)
         if self.n_calls % 2048 == 0 and len(self.model.ep_info_buffer) > 0:
-            # Get explained variance from logger
             if hasattr(self.model, 'logger') and self.model.logger is not None:
                 logs = self.logger.name_to_value
                 exp_var = logs.get('train/explained_variance', 0)
@@ -56,46 +55,128 @@ class EarlyStoppingCallback(BaseCallback):
                         logger.critical(f"🛑 Early stopping triggered after {self.patience} consecutive overfitting signals")
                         return False
                 else:
-                    self.counter = 0  # Reset counter
+                    self.counter = 0
                     
-                # Track best reward for model selection
                 if ep_rew > self.best_reward:
                     self.best_reward = ep_rew
                     
         return True
 
 
-def train_rl_agent(total_timesteps=100_000):
-    """Train RL agent with anti-overfitting measures."""
+def fetch_extended_data() -> pd.DataFrame:
+    """
+    Fetch 12 MONTHS of data using 1H timeframe.
+    yfinance allows up to 730 days for 1h data.
+    """
+    import yfinance as yf
+    
+    logger.info("Fetching 12 MONTHS of 1H data from yfinance...")
+    
+    # Gold Futures (GC=F) or XAUUSD proxy
+    ticker = yf.Ticker("GC=F")
+    
+    # Fetch 12 months of 1H data
+    end = datetime.now()
+    start = end - timedelta(days=365)
+    
+    df = ticker.history(start=start, end=end, interval="1h")
+    
+    if df.empty:
+        logger.warning("1H data failed, trying daily...")
+        df = ticker.history(start=start, end=end, interval="1d")
+    
+    # Standardize column names
+    df.columns = [c.lower() for c in df.columns]
+    
+    # Remove timezone info for compatibility
+    if df.index.tz is not None:
+        df.index = df.index.tz_localize(None)
+    
+    logger.info(f"Fetched {len(df)} bars from {df.index[0]} to {df.index[-1]}")
+    
+    return df
+
+
+def add_robust_features(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Add robust features that generalize across market regimes.
+    These are less period-specific than raw indicators.
+    """
+    # 1. Returns (always normalized around 0)
+    df['returns'] = df['close'].pct_change().fillna(0)
+    df['returns_5'] = df['close'].pct_change(5).fillna(0)
+    df['returns_20'] = df['close'].pct_change(20).fillna(0)
+    
+    # 2. Volatility Regime (normalized)
+    df['volatility'] = df['returns'].rolling(20).std().fillna(0)
+    df['vol_regime'] = (df['volatility'] / df['volatility'].rolling(100).mean()).fillna(1)
+    df['vol_regime'] = df['vol_regime'].clip(0.5, 2.0)
+    
+    # 3. Trend Strength (normalized -1 to 1)
+    df['ema_20'] = df['close'].ewm(span=20).mean()
+    df['ema_50'] = df['close'].ewm(span=50).mean()
+    df['trend'] = ((df['ema_20'] - df['ema_50']) / df['close']).clip(-0.02, 0.02) * 50
+    
+    # 4. Mean Reversion Signal
+    df['deviation'] = ((df['close'] - df['ema_20']) / df['close']).clip(-0.03, 0.03) * 30
+    
+    # 5. Momentum (normalized)
+    df['momentum'] = df['returns_5'].clip(-0.05, 0.05) * 10
+    
+    # 6. ATR Percentage
+    high_low = df['high'] - df['low']
+    df['atr_pct'] = high_low.rolling(14).mean() / df['close']
+    df['atr_pct'] = df['atr_pct'].fillna(0).clip(0, 0.02) * 50
+    
+    # 7. Volume Signal
+    if 'volume' in df.columns and df['volume'].std() > 0:
+        df['vol_signal'] = ((df['volume'] / df['volume'].rolling(20).mean()) - 1).clip(-2, 2)
+    else:
+        df['vol_signal'] = 0
+    
+    # 8. Hour of day (cyclical)
+    if hasattr(df.index, 'hour'):
+        df['hour_sin'] = np.sin(2 * np.pi * df.index.hour / 24)
+        df['hour_cos'] = np.cos(2 * np.pi * df.index.hour / 24)
+    else:
+        df['hour_sin'] = 0
+        df['hour_cos'] = 0
+    
+    # 9. Day of week (cyclical)
+    df['dow_sin'] = np.sin(2 * np.pi * df.index.dayofweek / 7)
+    df['dow_cos'] = np.cos(2 * np.pi * df.index.dayofweek / 7)
+    
+    df = df.fillna(0)
+    return df
+
+
+def train_rl_agent(total_timesteps=300_000):
+    """Train RL agent with production-grade settings."""
     model_path = Path("models/rl_deepscalper")
     model_path.mkdir(parents=True, exist_ok=True)
     
-    # 1. Fetch & Prepare Data
-    logger.info("Fetching data for RL training...")
-    fetcher = DataFetcher(source='yfinance')
-    from datetime import datetime, timedelta
-    end = datetime.now()
-    start = end - timedelta(days=59)
-    df_raw = fetcher.fetch(start, end, "5m")
+    # 1. Fetch Extended Data (12 months)
+    df = fetch_extended_data()
     
+    # 2. Process and add robust features
     processor = DataProcessor(timezone="Europe/Berlin")
-    df = processor.process(df_raw)
+    df = processor.process(df)
     
-    # Add features
     eng = FeatureEngineer()
     df = eng.compute_all(df, include_ml_features=True)
+    df = add_robust_features(df)
     df = df.dropna()
     
-    logger.info(f"Total data: {len(df)} bars")
+    logger.info(f"Total data: {len(df)} bars (~{len(df)//24} days)")
     
-    # 2. TRAIN/TEST SPLIT (80/20) - Prevent overfitting!
+    # 3. TRAIN/TEST SPLIT (80/20)
     split_idx = int(len(df) * 0.8)
     df_train = df.iloc[:split_idx].copy()
     df_test = df.iloc[split_idx:].copy()
     
     logger.info(f"Train: {len(df_train)} bars | Test: {len(df_test)} bars")
     
-    # 3. Create Training Environment
+    # 4. Create Training Environment
     def make_train_env():
         env = XauUsdEnv(df_train.copy(), window_size=30, mode="discrete")
         env = Monitor(env)
@@ -111,51 +192,50 @@ def train_rl_agent(total_timesteps=100_000):
         gamma=0.99
     )
     
-    # 4. Create Test Environment for Evaluation
+    # 5. Create Test Environment
     def make_test_env():
         env = XauUsdEnv(df_test.copy(), window_size=30, mode="discrete")
         env = Monitor(env)
         return env
     
     test_env = DummyVecEnv([make_test_env])
-    # Use same normalization stats from training
     test_env = VecNormalize(
         test_env,
         norm_obs=True,
-        norm_reward=False,  # Don't normalize reward for evaluation
+        norm_reward=False,
         clip_obs=10.0,
-        training=False  # Don't update stats during eval
+        training=False
     )
     
-    # 5. Create PPO Agent with ANTI-OVERFITTING hyperparameters
+    # 6. Create PPO Agent (Production Settings)
     model = PPO(
         "MlpPolicy", 
         train_env,
         verbose=1,
-        learning_rate=3e-4,
+        learning_rate=1e-4,
         n_steps=2048,
         batch_size=64,
-        n_epochs=5,          # Reduced from 10 (less overfitting)
+        n_epochs=5,
         gamma=0.99,
         gae_lambda=0.95,
         clip_range=0.2,
-        ent_coef=0.05,       # INCREASED from 0.01 (more exploration)
+        ent_coef=0.05,
         vf_coef=0.5,
         max_grad_norm=0.5,
         tensorboard_log="./logs/rl_tensorboard/",
         device="auto"
     )
     
-    # 6. Callbacks
+    # 7. Callbacks
     checkpoint_callback = CheckpointCallback(
-        save_freq=10000, 
+        save_freq=25000, 
         save_path=str(model_path),
         name_prefix='deepscalper_ppo'
     )
     
     early_stopping = EarlyStoppingCallback(
-        threshold=0.6,  # Stop if explained_variance > 0.6
-        patience=5,     # Allow 5 consecutive warnings before stopping
+        threshold=0.6,
+        patience=10,
         verbose=1
     )
     
@@ -163,16 +243,17 @@ def train_rl_agent(total_timesteps=100_000):
         test_env,
         best_model_save_path=str(model_path / "best"),
         log_path=str(model_path / "eval_logs"),
-        eval_freq=10000,
-        n_eval_episodes=3,
+        eval_freq=25000,
+        n_eval_episodes=5,
         deterministic=True,
         verbose=1
     )
     
-    # 7. Train with all callbacks
-    logger.info(f"Starting Training for {total_timesteps} steps...")
-    logger.info("Anti-overfitting: Early stopping at explained_variance > 0.6")
+    # 8. Train
+    logger.info(f"Starting PRODUCTION Training: {total_timesteps} steps")
+    logger.info(f"Data: ~{len(df_train)//24} days training, ~{len(df_test)//24} days testing")
     logger.info("Target: ep_rew_mean > 40 on TEST data for doubling potential")
+    logger.info("Fallback: London Breakout + Asian Scalp always available")
     
     try:
         model.learn(
@@ -183,36 +264,36 @@ def train_rl_agent(total_timesteps=100_000):
     except KeyboardInterrupt:
         logger.info("Training interrupted by user")
     
-    # 8. Save Final Model
+    # 9. Save Final Model
     model.save(model_path / "final_model")
     train_env.save(str(model_path / "vec_normalize.pkl"))
     
-    # 9. Final Evaluation on TEST data
+    # 10. Final Evaluation
     logger.info("\n" + "="*50)
     logger.info("FINAL EVALUATION ON UNSEEN TEST DATA")
     logger.info("="*50)
     
-    # Sync normalization stats
     test_env.obs_rms = train_env.obs_rms
     test_env.ret_rms = train_env.ret_rms
     
     mean_reward, std_reward = evaluate_policy(
-        model, test_env, n_eval_episodes=5, deterministic=True
+        model, test_env, n_eval_episodes=10, deterministic=True
     )
     
     logger.info(f"Test Performance: {mean_reward:.2f} +/- {std_reward:.2f}")
     
     if mean_reward > 40:
-        logger.info("✅ TARGET MET! Model ready for live trading (doubling potential)")
+        logger.info("✅ TARGET MET! Model ready for live trading")
     elif mean_reward > 20:
-        logger.info("⚠️ Moderate performance. May need more training or data.")
+        logger.info("⚠️ Moderate. Use with rule-based fallbacks.")
+    elif mean_reward > 0:
+        logger.info("⚠️ Marginal. Enable rule-based as primary.")
     else:
-        logger.warning("❌ Below target. Consider more data or hyperparameter tuning.")
+        logger.warning("❌ Use rule-based strategies only (London Breakout, Asian Scalp).")
     
-    logger.info(f"\nBest model saved to: {model_path / 'best'}")
-    logger.info(f"Final model saved to: {model_path / 'final_model.zip'}")
+    logger.info(f"\nBest model: {model_path / 'best'}")
+    logger.info(f"Final model: {model_path / 'final_model.zip'}")
+
 
 if __name__ == "__main__":
     train_rl_agent()
-
-
