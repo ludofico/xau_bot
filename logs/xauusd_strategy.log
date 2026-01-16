@@ -20687,3 +20687,21 @@ training data did not have the following fields: distance_from_asian_high, asian
 2026-01-13 17:27:18 | INFO     | xauusd_strategy.ml.embeddings:__init__:24 | Initializing TransformerEmbedder on mps...
 2026-01-13 17:27:18 | INFO     | xauusd_strategy.ml.embeddings:__init__:31 | Loaded amazon/chronos-bolt-tiny successfully.
 2026-01-13 17:27:18 | INFO     | xauusd_strategy.ai.sentiment:__init__:23 | Initializing SentimentAnalyst on mps...
+2026-01-16 18:03:35 | INFO     | xauusd_strategy.execution.live_trader:__init__:56 | Using Native MT5 Adapter 🖥️
+2026-01-16 18:03:54 | INFO     | xauusd_strategy.ml.model:load:301 | Model loaded from models\ml_filter_doubler.pkl
+2026-01-16 18:03:54 | INFO     | xauusd_strategy.execution.live_trader:_load_ml_model:166 | ML Model loaded successfully
+2026-01-16 18:03:54 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:201 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.2×ATR, TP=2.4×ATR
+2026-01-16 18:10:33 | INFO     | xauusd_strategy.execution.live_trader:__init__:56 | Using Native MT5 Adapter 🖥️
+2026-01-16 18:10:37 | INFO     | xauusd_strategy.ml.model:load:301 | Model loaded from models\ml_filter_doubler.pkl
+2026-01-16 18:10:37 | INFO     | xauusd_strategy.execution.live_trader:_load_ml_model:166 | ML Model loaded successfully
+2026-01-16 18:10:37 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:201 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.2×ATR, TP=2.4×ATR
+2026-01-16 18:12:27 | INFO     | __main__:train_rl_agent:30 | Fetching data for RL training...
+2026-01-16 18:36:35 | INFO     | __main__:train_rl_agent:30 | Fetching data for RL training...
+2026-01-16 18:36:37 | INFO     | xauusd_strategy.data.fetcher:fetch:67 | Fetching GC=F from yfinance: 2025-11-18 18:36:37.542841 to 2026-01-16 18:36:37.542841
+2026-01-16 18:36:45 | INFO     | xauusd_strategy.data.fetcher:fetch:117 | Fetched 10491 candles from yfinance
+2026-01-16 18:36:45 | INFO     | xauusd_strategy.data.processor:process:63 | Processing 10491 rows
+2026-01-16 18:36:45 | WARNING  | xauusd_strategy.data.processor:_remove_outliers:207 | Removed 72 outlier rows
+2026-01-16 18:36:45 | INFO     | xauusd_strategy.data.processor:process:90 | Processing complete: 10419 rows
+2026-01-16 18:36:45 | INFO     | __main__:train_rl_agent:45 | Data ready: 10356 bars for training
+2026-01-16 18:36:49 | INFO     | __main__:train_rl_agent:91 | Starting Training for 200000 steps...
+2026-01-16 18:36:49 | INFO     | __main__:train_rl_agent:92 | Watch for explained_variance > 0.1 as sign of learning!
