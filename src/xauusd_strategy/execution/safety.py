@@ -1,12 +1,21 @@
 
-from xauusd_strategy.execution.mt5_adapter import mt5
+from xauusd_strategy.execution.mt5_adapter import mt5 as default_mt5
 from xauusd_strategy.utils.logger import get_logger
 from datetime import datetime, date
 
 logger = get_logger("SafetyMonitor")
 
 class SafetyMonitor:
-    def __init__(self, settings):
+    def __init__(self, settings, adapter=None):
+        """
+        Initialize SafetyMonitor.
+        
+        Args:
+            settings: Configuration settings
+            adapter: Trading adapter (MT5, MetaApi, cTrader). 
+                     Falls back to native mt5 if not provided.
+        """
+        self.adapter = adapter if adapter else default_mt5
         self.max_spread = 200 # points, e.g. 20 cents
         self.eq_floor = 100.0 # Absolute Equity Floor in USD
         self.max_daily_loss = settings.risk.max_daily_drawdown_pct # e.g. 10.0%
@@ -22,13 +31,14 @@ class SafetyMonitor:
             self.initial_day_equity = equity
 
     def check_market_conditions(self, symbol):
-        tick = mt5.symbol_info_tick(symbol)
+        tick = self.adapter.symbol_info_tick(symbol)
         if not tick:
             logger.error("Safety: Tick not available!")
             return False
             
         spread = tick.ask - tick.bid
-        point = mt5.symbol_info(symbol).point
+        symbol_info = self.adapter.symbol_info(symbol)
+        point = symbol_info.point if symbol_info else 0.01
         spread_points = spread / point
         
         if spread_points > self.max_spread:
@@ -38,7 +48,7 @@ class SafetyMonitor:
         return True
 
     def check_risk_limits(self):
-        account = mt5.account_info()
+        account = self.adapter.account_info()
         if not account:
             return False
 

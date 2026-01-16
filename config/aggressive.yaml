@@ -78,14 +78,15 @@ ml_filter:
   retrain_frequency: weekly
 
 # Advanced Level 2 & 3 AI
-advanced_ai: true
+# NOTA: Abilitare solo quando i modelli sono trainati e pronti
+advanced_ai: false
 
 # Open Source Mac Bridge (Set true to avoid MetaApi fees)
 use_socket_bridge: false
 
 # cTrader Open API (Mac Native - Recommended for Fusion Markets)
 ctrader:
-  enabled: true
+  enabled: false  # Sistema usa Native MT5, non cTrader
   client_id: "20387_LuSzT1nOeFSC5FwhySR048rLYPgcAt3e3zA8JwFC9iHNk9WPA5"
   client_secret: "9pvGNR53AxgyftVlkSKF7BowvuxsVF32f4Hebi4BYCd1ij5R7h"
   account_id: ""  # Your cTrader account ID (from Fusion)

@@ -81,7 +81,7 @@ class LiveTrader:
             self.adapter = UnifiedNativeAdapter()
         
         # Components
-        self.safety = SafetyMonitor(self.settings)
+        self.safety = SafetyMonitor(self.settings, adapter=self.adapter)
         self.ml_model = self._load_ml_model()
         self.strategy = LondonBreakoutStrategy(settings=self.settings)
         self.scalp_strategy = AsianScalpingStrategy(settings=self.settings)
@@ -115,7 +115,19 @@ class LiveTrader:
         self.persistence_path = Path("monitor/persistence.json")
         self.signals_today = 0
         self.last_processed_time = None  # Track last candle time to avoid duplicate processing
+        self._last_state_save = 0  # Throttle state saving
+        self._state_save_interval = 30  # Save state every 30 seconds
         self._load_persistence()
+        
+        # Pre-initialize ML Feature Engineer (avoid recreation each loop)
+        self.ml_feature_engineer = None
+        if self.ml_model:
+            from xauusd_strategy.ml.features import MLFeatureEngineer
+            self.ml_feature_engineer = MLFeatureEngineer(
+                use_transformers=(self.transformer_brain is not None)
+            )
+            if self.transformer_brain:
+                self.ml_feature_engineer._embedder = self.transformer_brain
         
     def _load_persistence(self):
         """Restore state from file to handle restarts during trading hours."""
@@ -387,7 +399,11 @@ class LiveTrader:
                     # Optional: Close all positions here if desired
                     break
 
-                self._save_monitor_state()
+                # Throttled state save (every 30 seconds instead of every loop)
+                current_time = time.time()
+                if current_time - self._last_state_save >= self._state_save_interval:
+                    self._save_monitor_state()
+                    self._last_state_save = current_time
                 
                 # 0. Safety Checks
                 if not self.safety.check_risk_limits():
@@ -431,15 +447,9 @@ class LiveTrader:
                         
                         # 2. ML Prediction (Model is trained on Breakouts)
                         ml_prob = 0.0
-                        if self.ml_model:
+                        if self.ml_model and self.ml_feature_engineer:
                             try:
-                                from xauusd_strategy.ml.features import MLFeatureEngineer
-                                # Stage 2: Transformer embeddings enabled for ML filtering
-                                eng = MLFeatureEngineer(use_transformers=(self.transformer_brain is not None))
-                                if self.transformer_brain:
-                                    eng._embedder = self.transformer_brain # Use the pre-loaded brain
-                                
-                                f_df = eng.prepare_ml_features(df_prep)
+                                f_df = self.ml_feature_engineer.prepare_ml_features(df_prep)
                                 last_row = f_df.iloc[[-1]] 
                                 ml_prob = self.ml_model.predict(last_row)[0]
                             except Exception as e:
