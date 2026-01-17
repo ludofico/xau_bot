@@ -19,7 +19,7 @@ class DeepScalperAgent:
     def __init__(self, model_path: str = "models/rl_deepscalper/final_model.zip"):
         self.model_path = Path(model_path)
         self.model = None
-        self.window_size = 60
+        self.window_size = 30  # Must match env training
         self._load()
         
     def _load(self):

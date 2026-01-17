@@ -29,7 +29,7 @@ logger = get_logger("BacktestRunner")
 def fetch_data_mt5_or_yfinance(start_date, end_date, timeframe="5m"):
     """
     Fetch data from MT5 if available, otherwise yfinance.
-    MT5 has more historical data for M5.
+    Returns: (DataFrame, source_name)
     """
     # Try MT5 first
     try:
@@ -61,7 +61,7 @@ def fetch_data_mt5_or_yfinance(start_date, end_date, timeframe="5m"):
                     
                     logger.info(f"MT5: Fetched {len(df)} bars of {symbol}")
                     mt5.shutdown()
-                    return df
+                    return df, "MT5"
             
             mt5.shutdown()
             logger.warning("MT5: No valid data found, using yfinance fallback")
@@ -73,7 +73,8 @@ def fetch_data_mt5_or_yfinance(start_date, end_date, timeframe="5m"):
     
     # Fallback: yfinance
     from xauusd_strategy.data.fetcher import fetch_xauusd_data
-    return fetch_xauusd_data(start_date, end_date, timeframe=timeframe, source="yfinance")
+    df = fetch_xauusd_data(start_date, end_date, timeframe=timeframe, source="yfinance")
+    return df, "yfinance"
 
 
 def main():
@@ -99,13 +100,13 @@ def main():
     
     # 2. Fetch Data (MT5 or yfinance)
     logger.info("Fetching Market Data...")
-    df = fetch_data_mt5_or_yfinance(start_date, end_date, "5m")
+    df, data_source = fetch_data_mt5_or_yfinance(start_date, end_date, "5m")
     
     if df is None or df.empty:
         logger.error("No data fetched!")
         return
     
-    logger.info(f"Data: {len(df)} bars")
+    logger.info(f"Data: {len(df)} bars from {data_source}")
     
     # 3. Initialize Strategy
     strategy = LondonBreakoutStrategy()
@@ -157,8 +158,8 @@ def main():
     
     # 6b. Asian Scalp Signals
     try:
-        from xauusd_strategy.strategy.asian_scalp import AsianScalpStrategy
-        scalp_strategy = AsianScalpStrategy()
+        from xauusd_strategy.strategy.asian_scalp import AsianScalpingStrategy
+        scalp_strategy = AsianScalpingStrategy()
         scalp_signals = []
         for i in range(50, len(df_prep)):
             sig = scalp_strategy.generate_signal(df_prep, i, ml_probs.iloc[i] if ml_probs is not None and i < len(ml_probs) else 0.5)
@@ -174,7 +175,7 @@ def main():
     # 6c. RL Agent Signals
     if rl_agent:
         rl_signals = []
-        window = 30
+        window = 60  # Match agent window_size
         for i in range(window, len(df_prep)):
             try:
                 sub_df = df_prep.iloc[i-window:i+1].copy()
@@ -243,7 +244,7 @@ def main():
     print("\n" + "=" * 60)
     print("   FULL STACK BACKTEST - XAUUSD (MT5 + ML + RL)")
     print("=" * 60)
-    print(f"  Data Source:      {'MT5' if 'MT5' in str(type(df)) else 'yfinance'}")
+    print(f"  Data Source:      {data_source}")
     print(f"  ML Filter:        {'ON' if ml_probs is not None else 'OFF'}")
     print(f"  RL Agent:         {'ON' if rl_agent else 'OFF'}")
     print("-" * 60)
