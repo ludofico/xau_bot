@@ -149,10 +149,9 @@ def main():
     all_signals = []
     
     # 6a. London Breakout Signals (with ML filter)
-    min_ml_prob = 0.60 if ml_probs is not None else 0.0
-    breakout_signals = strategy.generate_signals(df_prep, ml_probs, min_probability=min_ml_prob)
+    breakout_signals = strategy.generate_signals(df_prep, ml_probs)
     for s in breakout_signals:
-        s.source = "LondonBreakout"
+        setattr(s, 'source', "LondonBreakout")
     all_signals.extend(breakout_signals)
     logger.info(f"London Breakout: {len(breakout_signals)} signals")
     
@@ -164,7 +163,7 @@ def main():
         for i in range(50, len(df_prep)):
             sig = scalp_strategy.generate_signal(df_prep, i, ml_probs.iloc[i] if ml_probs is not None and i < len(ml_probs) else 0.5)
             if sig:
-                sig.source = "AsianScalp"
+                setattr(sig, 'source', "AsianScalp")
                 sig.timestamp = df_prep.index[i]
                 scalp_signals.append(sig)
         all_signals.extend(scalp_signals)
@@ -193,7 +192,7 @@ def main():
                             stop_loss=close - (atr * 1.5),
                             take_profit=close + (atr * 2.0),
                             atr_value=atr,
-                            roc_value=0, bb_pct=0, volume_ratio=0,
+                            roc_value=0, asian_high=0, asian_low=0,
                             probability=0.7,
                             timestamp=df_prep.index[i]
                         )
@@ -204,11 +203,11 @@ def main():
                             stop_loss=close + (atr * 1.5),
                             take_profit=close - (atr * 2.0),
                             atr_value=atr,
-                            roc_value=0, bb_pct=0, volume_ratio=0,
+                            roc_value=0, asian_high=0, asian_low=0,
                             probability=0.7,
                             timestamp=df_prep.index[i]
                         )
-                    sig.source = "DeepScalper_RL"
+                    setattr(sig, 'source', "DeepScalper_RL")
                     rl_signals.append(sig)
             except Exception as e:
                 pass  # Skip errors silently
