@@ -375,11 +375,28 @@ class LiveTrader:
             
             import json
             import os
+            import shutil
             
-            # Ensure safe atomic write
-            with open("monitor/state.json.tmp", 'w') as f:
+            # Ensure monitor directory exists
+            os.makedirs("monitor", exist_ok=True)
+            
+            # Write to temp file
+            tmp_path = "monitor/state.json.tmp"
+            final_path = "monitor/state.json"
+            
+            with open(tmp_path, 'w') as f:
                 json.dump(state, f, indent=2)
-            os.replace("monitor/state.json.tmp", "monitor/state.json")
+            
+            # Windows-safe file replace with retry
+            for attempt in range(3):
+                try:
+                    if os.path.exists(final_path):
+                        os.remove(final_path)
+                    shutil.move(tmp_path, final_path)
+                    break
+                except (PermissionError, OSError):
+                    import time
+                    time.sleep(0.1)
             
         except Exception as e:
             logger.error(f"Dashboard State Save Error: {e}")
