@@ -23537,3 +23537,120 @@ AttributeError: 'Series' object has no attribute 'tick_volume'. Did you mean: 'r
 2026-01-19 15:12:04 | ERROR    | __main__:run:798 | RL Step Error: Error: Unexpected observation shape (422,) for Box environment, please use (154,) or (n_env, 154) for the observation shape.
 2026-01-19 15:12:05 | ERROR    | __main__:run:798 | RL Step Error: Error: Unexpected observation shape (422,) for Box environment, please use (154,) or (n_env, 154) for the observation shape.
 2026-01-19 15:12:14 | INFO     | __main__:__init__:56 | Using Native MT5 Adapter 🖥️
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.1615
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.1367
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.0411
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.7361
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.8742
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.5823
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.0890
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.0890
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:run:253 | Running 100 Monte Carlo simulations...
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:run:321 | Simulation complete. Prob profit: 98.0%, Prob ruin: 0.0%
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.5886
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.5886
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:run:253 | Running 500 Monte Carlo simulations...
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:run:321 | Simulation complete. Prob profit: 95.2%, Prob ruin: 0.0%
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.6748
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.6748
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:run:253 | Running 100 Monte Carlo simulations...
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:run:321 | Simulation complete. Prob profit: 96.0%, Prob ruin: 0.0%
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.2698
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.2698
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:run:253 | Running 1,000 Monte Carlo simulations...
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:run:321 | Simulation complete. Prob profit: 94.8%, Prob ruin: 0.0%
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.7610
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.7610
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.4819
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.4819
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.0201
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.0201
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:run:253 | Running 100 Monte Carlo simulations...
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:run:321 | Simulation complete. Prob profit: 99.0%, Prob ruin: 0.0%
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:save_results:355 | Results saved to /private/var/folders/bw/k__08kbj3dl64hv5dq44_3880000gn/T/pytest-of-ludovicovalenzano/pytest-1/test_result_serialization0/test_results.json
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.1056
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.1056
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:run:253 | Running 1,000 Monte Carlo simulations...
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:run:321 | Simulation complete. Prob profit: 100.0%, Prob ruin: 0.0%
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.3563
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.3563
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:run:253 | Running 1,000 Monte Carlo simulations...
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:run:321 | Simulation complete. Prob profit: 0.1%, Prob ruin: 0.0%
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.3874
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.3874
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.3874
+2026-01-19 19:20:12 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.3874
+2026-01-19 19:20:24 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+2026-01-19 19:20:24 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+2026-01-19 19:20:24 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+2026-01-19 19:20:24 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+2026-01-19 19:20:24 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+2026-01-19 19:20:24 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+2026-01-19 19:20:24 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+2026-01-19 19:20:24 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+2026-01-19 19:20:24 | INFO     | xauusd_strategy.strategy.asian_scalp:generate_signal:269 | 🎯 PRECISION SHORT | Confirmations: 6/8 | Trend: BEAR | RSI: 0.0 | BB_pos: 0.10 | EMA21: 2655.50 < EMA55: 2663.63
+2026-01-19 19:20:24 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:201 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.2×ATR, TP=2.4×ATR
+2026-01-19 19:20:24 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:201 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.2×ATR, TP=2.4×ATR
+2026-01-19 19:20:24 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:201 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.2×ATR, TP=2.4×ATR
+2026-01-19 19:20:24 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:201 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.2×ATR, TP=2.4×ATR
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.5054
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.8508
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.5099
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.5181
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.7408
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.0938
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.1957
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.1957
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:run:253 | Running 100 Monte Carlo simulations...
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:run:321 | Simulation complete. Prob profit: 96.0%, Prob ruin: 0.0%
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.1290
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.1290
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:run:253 | Running 500 Monte Carlo simulations...
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:run:321 | Simulation complete. Prob profit: 95.4%, Prob ruin: 0.0%
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.8462
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.8462
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:run:253 | Running 100 Monte Carlo simulations...
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:run:321 | Simulation complete. Prob profit: 97.0%, Prob ruin: 0.0%
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.6346
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.6346
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:run:253 | Running 1,000 Monte Carlo simulations...
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:run:321 | Simulation complete. Prob profit: 95.2%, Prob ruin: 0.0%
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.4177
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.4177
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.4433
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.4433
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.0642
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.0642
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:run:253 | Running 100 Monte Carlo simulations...
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:run:321 | Simulation complete. Prob profit: 98.0%, Prob ruin: 0.0%
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:save_results:355 | Results saved to /private/var/folders/bw/k__08kbj3dl64hv5dq44_3880000gn/T/pytest-of-ludovicovalenzano/pytest-2/test_result_serialization0/test_results.json
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.7617
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.7617
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:run:253 | Running 1,000 Monte Carlo simulations...
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:run:321 | Simulation complete. Prob profit: 100.0%, Prob ruin: 0.0%
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.5136
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.5136
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:run:253 | Running 1,000 Monte Carlo simulations...
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:run:321 | Simulation complete. Prob profit: 0.0%, Prob ruin: 0.0%
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.3874
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.3874
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.3874
+2026-01-19 19:21:31 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.3874
+2026-01-19 19:21:33 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+2026-01-19 19:21:33 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+2026-01-19 19:21:33 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+2026-01-19 19:21:33 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+2026-01-19 19:21:33 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+2026-01-19 19:21:33 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+2026-01-19 19:21:33 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+2026-01-19 19:21:33 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+2026-01-19 19:21:33 | INFO     | xauusd_strategy.strategy.asian_scalp:generate_signal:269 | 🎯 PRECISION SHORT | Confirmations: 6/8 | Trend: BEAR | RSI: 0.0 | BB_pos: 0.10 | EMA21: 2655.50 < EMA55: 2663.63
+2026-01-19 19:21:33 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:201 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.2×ATR, TP=2.4×ATR
+2026-01-19 19:21:33 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:201 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.2×ATR, TP=2.4×ATR
+2026-01-19 19:21:33 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:201 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.2×ATR, TP=2.4×ATR
+2026-01-19 19:21:33 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:201 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.2×ATR, TP=2.4×ATR
+2026-01-19 19:21:36 | INFO     | xauusd_strategy.backtest.monte_carlo:_test_entropy:71 | Entropy quality good: p=0.9944
+2026-01-19 19:21:36 | INFO     | xauusd_strategy.backtest.monte_carlo:__init__:208 | TRNG initialized. Entropy quality: 0.9944
+2026-01-19 19:21:36 | INFO     | xauusd_strategy.backtest.monte_carlo:run:253 | Running 10,000 Monte Carlo simulations...
+2026-01-19 19:21:36 | INFO     | xauusd_strategy.backtest.monte_carlo:run:321 | Simulation complete. Prob profit: 98.2%, Prob ruin: 0.0%
+2026-01-19 19:21:36 | INFO     | xauusd_strategy.backtest.monte_carlo:save_results:355 | Results saved to logs/monte_carlo_results.json

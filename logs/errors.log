@@ -16368,3 +16368,35 @@ AttributeError: 'Series' object has no attribute 'tick_volume'. Did you mean: 'r
 
 2026-01-19 15:12:05 | ERROR    | __main__:run:798 | RL Step Error: Error: Unexpected observation shape (422,) for Box environment, please use (154,) or (n_env, 154) for the observation shape.
 
+2026-01-19 19:20:24 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+
+2026-01-19 19:20:24 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+
+2026-01-19 19:20:24 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+
+2026-01-19 19:20:24 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+
+2026-01-19 19:20:24 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+
+2026-01-19 19:20:24 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+
+2026-01-19 19:20:24 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+
+2026-01-19 19:20:24 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+
+2026-01-19 19:21:33 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+
+2026-01-19 19:21:33 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+
+2026-01-19 19:21:33 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+
+2026-01-19 19:21:33 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+
+2026-01-19 19:21:33 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+
+2026-01-19 19:21:33 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+
+2026-01-19 19:21:33 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+
+2026-01-19 19:21:33 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
+

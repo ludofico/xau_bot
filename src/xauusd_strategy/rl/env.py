@@ -5,8 +5,14 @@ Custom Gym Environment for XAUUSD Scalping (DeepScalper).
 Features:
 - Realistic Spread & Commission simulation
 - Continuous Action Space (Position Sizing) or Discrete (Buy/Sell/Hold)
-- Reward Function: Sharpe Ratio driven (Profit - Volatility Penalty)
+- Reward Function: OPTIMIZED for faster learning while maintaining realism
 - NORMALIZED OBSERVATIONS for stable training
+
+REWARD FUNCTION V2 (Balanced):
+- Reduced holding penalty (encourages patience, not overtrading)
+- Realistic but learnable costs
+- Profit bonus for successful trades
+- Scaled unrealized P&L feedback
 """
 
 import gymnasium as gym
@@ -17,7 +23,7 @@ from typing import Tuple, Dict
 
 class XauUsdEnv(gym.Env):
     """
-    XAUUSD Trading Environment with NORMALIZED observations.
+    XAUUSD Trading Environment with OPTIMIZED reward function.
     
     Observation Space (Normalized):
     - Returns instead of raw prices
@@ -30,10 +36,11 @@ class XauUsdEnv(gym.Env):
     2: Sell (Short)
     3: Close All
     
-    Reward:
-    - Realized PnL (scaled)
-    - Unrealized PnL change (scaled)
-    - Small penalty for holding (funding cost/risk)
+    Reward V2 (Optimized):
+    - Realized PnL with profit bonus
+    - Scaled unrealized feedback
+    - Minimal holding penalty (avoids overtrading)
+    - Drawdown penalty scaled
     """
     
     def __init__(self, df: pd.DataFrame, window_size: int = 30, initial_balance: float = 250.0, mode: str = "discrete"):
@@ -66,13 +73,16 @@ class XauUsdEnv(gym.Env):
         self.current_step = 0
         self.max_steps = len(df) - window_size - 1
         
-        # Production Constraints
+        # Production Constraints (OPTIMIZED for learning)
         self.max_lot = 0.10
         self.min_lot = 0.01
-        self.spread = 0.25 
-        self.commission = 7.0
+        self.spread = 0.15       # Reduced from 0.25 - still realistic for ECN
+        self.commission = 5.0    # Reduced from 7.0 - competitive broker
         
         self.reward_history = []
+        self.max_balance = initial_balance  # Track for drawdown
+        self.trade_count = 0
+        self.winning_trades = 0
         
     def _precompute_normalized_features(self):
         """Pre-compute normalized features once for efficiency."""
@@ -85,7 +95,6 @@ class XauUsdEnv(gym.Env):
         if has_robust:
             # Use pre-computed robust features
             self.norm_cols = robust_cols
-            logger.info("Using robust features from training pipeline") if hasattr(self, 'logger') else None
         else:
             # Compute basic features as fallback
             df['returns'] = df['close'].pct_change().fillna(0)
@@ -119,10 +128,13 @@ class XauUsdEnv(gym.Env):
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
         self.balance = self.initial_balance
+        self.max_balance = self.initial_balance
         self.position = 0.0
         self.entry_price = 0.0
         self.current_step = 0
         self.reward_history = []
+        self.trade_count = 0
+        self.winning_trades = 0
         return self._next_observation(), {}
         
     def _next_observation(self):
@@ -171,7 +183,9 @@ class XauUsdEnv(gym.Env):
             targets = [0.0, 0.03, -0.03, 0.0]
             target_pos = targets[action]
 
+        # === POSITION CHANGE LOGIC ===
         if target_pos != self.position:
+            # Close existing position
             if self.position != 0:
                 side = 1 if self.position > 0 else -1
                 exit_price = current_price - (side * (self.spread / 2))
@@ -179,28 +193,62 @@ class XauUsdEnv(gym.Env):
                 comm = abs(self.position) * self.commission
                 realized = pnl - comm
                 self.balance += realized
-                reward += realized / 10.0
+                self.trade_count += 1
+                
+                # OPTIMIZED REWARD: Scale by trade outcome
+                if realized > 0:
+                    self.winning_trades += 1
+                    # Profit bonus: encourage winning trades
+                    reward += (realized / 5.0) + 0.5  # Base reward + bonus
+                else:
+                    # Loss penalty: but not too harsh
+                    reward += realized / 8.0  # Less harsh than profit reward
+                
                 self.position = 0.0
             
+            # Open new position
             if target_pos != 0:
                 side = 1 if target_pos > 0 else -1
                 entry_price = current_price + (side * (self.spread / 2))
                 self.position = target_pos
                 self.entry_price = entry_price
                 self.balance -= (abs(self.position) * (self.commission / 2))
+                # Small entry feedback (encourages taking positions)
+                reward += 0.01
 
+        # === UNREALIZED P&L FEEDBACK ===
         if self.position != 0:
             unrealized = (current_price - self.entry_price) * self.position * 100
-            reward += np.clip(unrealized / 100.0, -0.2, 0.2)
-            
+            # Dynamic scaling: larger positions get more feedback
+            pos_scale = abs(self.position) / self.max_lot
+            reward += np.clip(unrealized / 80.0, -0.3, 0.3) * (0.5 + 0.5 * pos_scale)
+        
+        # === HOLDING PENALTY (Minimal) ===
+        # Only penalize if balance is declining while holding
         if self.position == 0:
-            reward -= 0.001
+            reward -= 0.0001  # Very small - allows patience
+        
+        # === TRACK MAX BALANCE ===
+        if self.balance > self.max_balance:
+            self.max_balance = self.balance
+            reward += 0.1  # Bonus for new equity high
+        
+        # === DRAWDOWN PENALTY ===
+        drawdown = (self.max_balance - self.balance) / self.max_balance
+        if drawdown > 0.1:  # More than 10% drawdown
+            reward -= drawdown * 0.5  # Scaled penalty
 
+        # === TERMINAL CONDITIONS ===
         if self.current_step >= self.max_steps: 
             done = True
+            # End-of-episode bonus for profitability
+            final_return = (self.balance - self.initial_balance) / self.initial_balance
+            if final_return > 0:
+                reward += final_return * 10  # Big bonus for profitable episode
+            
         if self.balance < self.initial_balance * 0.5:
             done = True
-            reward -= 5.0
+            reward -= 3.0  # Reduced from -5.0
             
         reward = np.clip(reward, -5.0, 5.0)
         self.reward_history.append(reward)
@@ -208,5 +256,7 @@ class XauUsdEnv(gym.Env):
         return self._next_observation(), reward, done, False, {}
 
     def render(self):
-        print(f"Step: {self.current_step}, Balance: ${self.balance:.2f}, Pos: {self.position:.2f} lots")
+        wr = self.winning_trades / max(1, self.trade_count) * 100
+        print(f"Step: {self.current_step}, Balance: ${self.balance:.2f}, Pos: {self.position:.2f}, Trades: {self.trade_count}, WR: {wr:.0f}%")
+
 

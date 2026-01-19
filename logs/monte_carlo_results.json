@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-01-19T19:21:36.883353",
+  "initial_balance": 250.0,
+  "n_simulations": 10000,
+  "ruin_threshold": 0.5,
+  "entropy_quality": 0.9944442344230443,
+  "results": {
+    "n_simulations": 10000,
+    "mean_final_balance": 363.72931,
+    "std_final_balance": 55.631374995805196,
+    "ci_95": [
+      257.69750000000005,
+      474.0999999999999
+    ],
+    "ci_99": [
+      225.196,
+      510.8019999999997
+    ],
+    "prob_profit": 0.9824,
+    "prob_ruin": 0.0,
+    "expected_max_drawdown": 0.09222776311186012,
+    "worst_case_drawdown": 0.23316690141484994,
+    "sharpe_ratio": 32.4528528437408
+  }
+}
