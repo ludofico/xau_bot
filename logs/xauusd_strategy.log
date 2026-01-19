@@ -23537,3 +23537,30 @@ AttributeError: 'Series' object has no attribute 'tick_volume'. Did you mean: 'r
 2026-01-19 15:12:04 | ERROR    | __main__:run:798 | RL Step Error: Error: Unexpected observation shape (422,) for Box environment, please use (154,) or (n_env, 154) for the observation shape.
 2026-01-19 15:12:05 | ERROR    | __main__:run:798 | RL Step Error: Error: Unexpected observation shape (422,) for Box environment, please use (154,) or (n_env, 154) for the observation shape.
 2026-01-19 15:12:14 | INFO     | __main__:__init__:56 | Using Native MT5 Adapter 🖥️
+2026-01-19 19:05:48 | INFO     | __main__:train_rl_agent:268 | ============================================================
+2026-01-19 19:05:48 | INFO     | __main__:train_rl_agent:269 | ANTI-OVERFITTING RL TRAINING
+2026-01-19 19:05:48 | INFO     | __main__:train_rl_agent:270 | ============================================================
+2026-01-19 19:05:48 | INFO     | __main__:fetch_extended_data:142 | MT5 connected! Fetching 12 MONTHS of M5 data...
+2026-01-19 19:05:51 | INFO     | __main__:fetch_extended_data:171 | Fetching 2 YEARS of 1H data from yfinance...
+2026-01-19 19:06:00 | INFO     | __main__:fetch_extended_data:187 | yfinance: Fetched 11452 bars (~477 days)
+2026-01-19 19:06:00 | INFO     | xauusd_strategy.data.processor:process:63 | Processing 11452 rows
+2026-01-19 19:06:00 | WARNING  | xauusd_strategy.data.processor:_remove_outliers:207 | Removed 48 outlier rows
+2026-01-19 19:06:00 | INFO     | xauusd_strategy.data.processor:process:90 | Processing complete: 10959 rows
+2026-01-19 19:06:00 | INFO     | __main__:train_rl_agent:283 | Total data: 10959 bars (~456 days)
+2026-01-19 19:06:00 | INFO     | __main__:train_rl_agent:290 | Train: 7671 bars (69%)
+2026-01-19 19:06:00 | INFO     | __main__:train_rl_agent:291 | Test:  3288 bars (30%)
+2026-01-19 19:06:05 | INFO     | __main__:train_rl_agent:369 | 
+2026-01-19 19:06:05 | INFO     | __main__:train_rl_agent:370 | TRAINING CONFIGURATION:
+2026-01-19 19:06:05 | INFO     | __main__:train_rl_agent:371 |   - Timesteps: 300,000
+2026-01-19 19:06:05 | INFO     | __main__:train_rl_agent:372 |   - Data Augmentation: True
+2026-01-19 19:06:05 | INFO     | __main__:train_rl_agent:373 |   - Entropy Coef: 0.1 (high exploration)
+2026-01-19 19:06:05 | INFO     | __main__:train_rl_agent:374 |   - Clip Range: 0.1 (conservative updates)
+2026-01-19 19:06:05 | INFO     | __main__:train_rl_agent:375 |   - Network: [64, 64] (small to prevent overfit)
+2026-01-19 19:06:05 | INFO     | __main__:train_rl_agent:376 |   - Grad Clip: 0.3 (aggressive)
+2026-01-19 19:06:05 | INFO     | __main__:train_rl_agent:377 | 
+2026-01-19 19:06:05 | INFO     | __main__:train_rl_agent:378 | Starting training... (Ctrl+C to stop early)
+2026-01-19 19:37:36 | INFO     | __main__:train_rl_agent:387 | Training interrupted by user
+2026-01-19 19:37:36 | INFO     | __main__:train_rl_agent:394 | 
+2026-01-19 19:37:36 | INFO     | __main__:train_rl_agent:395 | ============================================================
+2026-01-19 19:37:36 | INFO     | __main__:train_rl_agent:396 | FINAL EVALUATION ON UNSEEN TEST DATA
+2026-01-19 19:37:36 | INFO     | __main__:train_rl_agent:397 | ============================================================
