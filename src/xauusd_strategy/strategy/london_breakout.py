@@ -420,18 +420,19 @@ class LondonBreakoutStrategy:
         take_profit = 0.0
         
         # LONG: Price breaks above Box high with bullish momentum AND Trend
+        # TRUE BREAKOUT: Follow the momentum direction
         if close > ref_high and roc > self.roc_threshold and trend_long:
-            signal_type = SignalType.SHORT # INVERTED (Mean Reversion)
+            signal_type = SignalType.LONG  # TRUE BREAKOUT (Trend-Following)
             entry_price = close
-            stop_loss = entry_price + (atr * self.sl_atr_mult)
-            take_profit = entry_price - (atr * self.tp_atr_mult)
+            stop_loss = entry_price - (atr * self.sl_atr_mult)  # SL below for LONG
+            take_profit = entry_price + (atr * self.tp_atr_mult)  # TP above for LONG
         
         # SHORT: Price breaks below Box low with bearish momentum AND Trend
         elif close < ref_low and roc < -self.roc_threshold and trend_short:
-            signal_type = SignalType.LONG # INVERTED (Mean Reversion)
+            signal_type = SignalType.SHORT  # TRUE BREAKOUT (Trend-Following)
             entry_price = close
-            stop_loss = entry_price - (atr * self.sl_atr_mult)
-            take_profit = entry_price + (atr * self.tp_atr_mult)
+            stop_loss = entry_price + (atr * self.sl_atr_mult)  # SL above for SHORT
+            take_profit = entry_price - (atr * self.tp_atr_mult)  # TP below for SHORT
         
         else:
             return None

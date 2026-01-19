@@ -62,6 +62,7 @@ class LiveTrader:
                     self.wrapper = MT5Adapter # The class with safe order_send
                     
                     # Constants
+                    self.TIMEFRAME_M1 = self.lib.TIMEFRAME_M1
                     self.TIMEFRAME_M5 = self.lib.TIMEFRAME_M5
                     self.ORDER_TYPE_BUY = self.lib.ORDER_TYPE_BUY
                     self.ORDER_TYPE_SELL = self.lib.ORDER_TYPE_SELL
@@ -95,22 +96,50 @@ class LiveTrader:
             from xauusd_strategy.ml.embeddings import TransformerEmbedder
             from xauusd_strategy.ml.tick_model import TickPredictor
             from xauusd_strategy.rl.agent import DeepScalperAgent
+            from xauusd_strategy.ml.online_trainer import OnlineRLTrainer
             
             self.transformer_brain = TransformerEmbedder()
             self.sentiment_analyst = SentimentAnalyst()
             self.tick_predictor = TickPredictor()
             self.rl_agent = DeepScalperAgent()
+            
+            # Online RL Training for real-time learning
+            self.online_trainer = OnlineRLTrainer(
+                self.rl_agent,
+                buffer_size=1000,
+                min_experiences=10,
+                update_frequency=10  # Update every 10 closed trades
+            )
+            logger.info("🎓 Online RL Training enabled - agent will learn from live trades")
         else:
             self.transformer_brain = None
             self.sentiment_analyst = None
             self.tick_predictor = None
             self.rl_agent = None
+            self.online_trainer = None
         
         # Pyramiding State
         self.initial_sl_dist = 2.5 # $
         self.step_points = 250     # 250 points = $2.5
         self.max_layers = 4
-        self.volume = 0.03
+        
+        # Dynamic Volume Calculation for Doubling Potential
+        # With €250 balance, 3% risk = €7.5/trade
+        # SL of $2.5 on XAUUSD = 250 points = €2.15 per 0.01 lot
+        # Volume = Risk / (SL_points * point_value)
+        self.base_risk_pct = getattr(self.settings.risk, 'risk_per_trade_pct', 3.0) / 100
+        self.volume = self._calculate_lot_size()
+        logger.info(f"💰 Dynamic Volume: {self.volume} lots (Risk: {self.base_risk_pct*100:.1f}%)")
+        
+        # Scalp Cooldown (avoid opening multiple trades on same signal)
+        self.last_scalp_time = 0
+        self.scalp_cooldown_seconds = 30  # Minimum 30 seconds between scalp entries
+        
+        # Breakeven Settings (from strategy or default)
+        self.breakeven_at_rr = getattr(self.strategy, 'breakeven_at_rr', 1.0)
+        self.breakeven_buffer = 0.30  # $0.30 buffer above entry for spread protection (was 0.10)
+        self._breakeven_applied = set()  # Track tickets that already have breakeven applied
+        self._last_state = None  # Last market state for Online RL Training
         # Persistence
         self.persistence_path = Path("monitor/persistence.json")
         self.signals_today = 0
@@ -157,6 +186,48 @@ class LiveTrader:
         except Exception as e:
             logger.error(f"Persistence Save Error: {e}")
 
+    def _calculate_lot_size(self, sl_distance: float = 2.5) -> float:
+        """
+        Calculate dynamic lot size based on account balance and risk percentage.
+        
+        For XAUUSD:
+        - 1 lot = 100 oz, point value ~$1 per point per 0.01 lot
+        - Risk = lot_size * sl_points * point_value
+        
+        Target: Aggressive sizing for doubling potential.
+        """
+        try:
+            account = self.adapter.account_info()
+            if account is None:
+                return 0.05  # Default fallback
+            
+            balance = account.balance
+            symbol_info = self.adapter.symbol_info(self.symbol)
+            
+            # Calculate risk amount in account currency
+            risk_amount = balance * self.base_risk_pct
+            
+            # XAUUSD tick value (approx $0.86 per point per 0.01 lot for EUR account)
+            # Using tick_value from symbol if available
+            tick_value = getattr(symbol_info, 'trade_tick_value', 0.86)
+            point = getattr(symbol_info, 'point', 0.01)
+            
+            # SL in points
+            sl_points = sl_distance / point
+            
+            # Lot size = Risk / (SL_points * tick_value)
+            lot_size = risk_amount / (sl_points * tick_value)
+            
+            # Round to 0.01 and apply limits
+            lot_size = round(lot_size, 2)
+            lot_size = max(0.01, min(lot_size, 1.0))  # Min 0.01, Max 1.0
+            
+            return lot_size
+            
+        except Exception as e:
+            logger.error(f"Lot Size Calc Error: {e}")
+            return 0.05
+
     def _load_ml_model(self):
         try:
             model_path = Path("models/ml_filter_doubler.pkl")
@@ -175,9 +246,13 @@ class LiveTrader:
     def connect(self):
         return self.adapter.initialize()
 
-    def get_market_data(self, n_bars=100):
+    def get_market_data(self, n_bars=100, timeframe=None):
+        """Get market data. Default M5, but scalping uses M1."""
+        if timeframe is None:
+            timeframe = self.adapter.TIMEFRAME_M5
+        
         # 1. Try fetching from Adapter (Native/MetaApi)
-        rates = self.adapter.copy_rates_from_pos(self.symbol, self.adapter.TIMEFRAME_M5, 0, n_bars)
+        rates = self.adapter.copy_rates_from_pos(self.symbol, timeframe, 0, n_bars)
         
         # 2. If Adapter fails (e.g. Socket Bridge), use YFinance fallback
         if rates is None:
@@ -216,7 +291,12 @@ class LiveTrader:
             for _ in range(20): # Wait up to 2 seconds (20 * 100ms)
                 tick_hist = self.get_market_data(20) # Simplified: uses 1m/5m but should be tick
                 # In real MT5 we'd use copy_ticks_from, here we mock it with recent data
-                sim_ticks = [(r.close, r.tick_volume) for _, r in tick_hist.iterrows()]
+                # Use 'volume' column (real_volume may not exist, tick_volume may not exist)
+                vol_col = 'volume' if 'volume' in tick_hist.columns else 'real_volume' if 'real_volume' in tick_hist.columns else None
+                if vol_col:
+                    sim_ticks = [(r.close, r[vol_col]) for _, r in tick_hist.iterrows()]
+                else:
+                    sim_ticks = [(r.close, 100) for _, r in tick_hist.iterrows()]  # Fallback
                 prediction = self.tick_predictor.predict_delta(sim_ticks)
                 
                 # If buying, we want a positive predicted delta (Up)
@@ -248,9 +328,34 @@ class LiveTrader:
             "type_filling": self.adapter.ORDER_FILLING_IOC,
         }
         
-        self.adapter.order_send(request) # Safe execution with retries
-        self.signals_today += 1
-        self._save_persistence()
+        logger.info(f"📤 Sending Order: {action_type} {self.volume} @ {price:.2f} SL={sl_price:.2f} TP={tp_price:.2f}")
+        result = self.adapter.order_send(request) # Safe execution with retries
+        
+        if result is None:
+            logger.error("❌ Order send returned None!")
+        elif hasattr(result, 'retcode'):
+            if result.retcode == 10009:  # TRADE_RETCODE_DONE
+                logger.info(f"✅ Order SUCCESS: Ticket={result.order} Deal={result.deal}")
+                self.signals_today += 1
+                self._save_persistence()
+                
+                # Record for Online RL Training
+                if self.online_trainer and hasattr(self, '_last_state') and self._last_state is not None:
+                    self.online_trainer.record_trade_open(
+                        ticket=result.order,
+                        state=self._last_state,
+                        action=1 if signal_type == 1 else 2,  # 1=Buy, 2=Sell
+                        entry_price=price,
+                        direction=signal_type,
+                        volume=self.volume
+                    )
+            else:
+                logger.error(f"❌ Order FAILED: retcode={result.retcode} comment={result.comment}")
+        else:
+            # MetaApi or other adapter result format
+            logger.info(f"Order result: {result}")
+            self.signals_today += 1
+            self._save_persistence()
 
     def close_all_positions(self, comment="Emergency Close"):
         """Close all open positions for this magic number."""
@@ -258,27 +363,30 @@ class LiveTrader:
         if not positions:
             return
             
-        logger.info(f"Closing {len(positions)} positions [{comment}]")
+        logger.info(f"🔴 Closing {len(positions)} positions [{comment}]")
         for p in positions:
-            direction = 1 if p.type == 0 else -1 # BUY=0, SELL=1
-            # Close by opening opposite direction (Market Close)
-            # Actually, Unified adapter should ideally have a close_position method, 
-            # but manually sending a reverse order is standard MT5 close.
-            # However, Native MT5 order_send with target ticket is safer.
-            # For now, keeping it simple:
+            direction = 1 if p.type == 0 else -1  # BUY=0, SELL=1
+            tick = self.adapter.symbol_info_tick(self.symbol)
+            
             req = {
                 "action": self.adapter.TRADE_ACTION_DEAL,
                 "symbol": self.symbol,
                 "volume": p.volume,
-                "type": 1 if direction == 1 else 0, # Reverse
+                "type": 1 if direction == 1 else 0,  # Reverse to close
                 "position": p.ticket,
-                "price": self.adapter.symbol_info_tick(self.symbol).bid if direction == 1 else self.adapter.symbol_info_tick(self.symbol).ask,
+                "price": tick.bid if direction == 1 else tick.ask,
                 "magic": self.magic_number,
                 "comment": comment,
                 "type_time": self.adapter.ORDER_TIME_GTC,
                 "type_filling": self.adapter.ORDER_FILLING_IOC,
             }
-            self.adapter.order_send(req)
+            result = self.adapter.order_send(req)
+            
+            if result and hasattr(result, 'retcode'):
+                if result.retcode == 10009:
+                    logger.info(f"✅ Closed Ticket {p.ticket}")
+                else:
+                    logger.error(f"❌ Failed to close Ticket {p.ticket}: {result.comment}")
 
     def manage_pyramid(self, positions):
         # Sort positions by time
@@ -331,6 +439,142 @@ class LiveTrader:
                         "symbol": self.symbol
                     }
                     self.adapter.order_send(req)
+
+    def _manage_breakeven(self, positions):
+        """
+        Move stop loss to breakeven (entry price + buffer) when position 
+        reaches the configured R:R ratio (breakeven_at_rr).
+        """
+        if not positions:
+            return
+            
+        tick = self.adapter.symbol_info_tick(self.symbol)
+        if not tick:
+            return
+            
+        for pos in positions:
+            ticket = pos.ticket
+            
+            # Skip if breakeven already applied to this position
+            if ticket in self._breakeven_applied:
+                continue
+                
+            entry_price = pos.price_open
+            current_sl = pos.sl
+            current_tp = pos.tp
+            
+            # Skip if no SL set (shouldn't happen but safety check)
+            if current_sl == 0:
+                continue
+                
+            # Determine direction: BUY=0, SELL=1
+            is_buy = (pos.type == 0)
+            
+            # Calculate initial risk (distance from entry to SL)
+            if is_buy:
+                initial_risk = entry_price - current_sl
+                current_price = tick.bid
+                current_profit_dist = current_price - entry_price
+            else:
+                initial_risk = current_sl - entry_price
+                current_price = tick.ask
+                current_profit_dist = entry_price - current_price
+            
+            # Avoid division by zero
+            if initial_risk <= 0:
+                continue
+                
+            # Calculate current R:R
+            current_rr = current_profit_dist / initial_risk
+            
+            # Check if we've reached breakeven threshold
+            if current_rr >= self.breakeven_at_rr:
+                # Calculate new SL at breakeven + buffer
+                if is_buy:
+                    new_sl = entry_price + self.breakeven_buffer
+                    # Only update if new SL is better (higher for buys)
+                    if new_sl <= current_sl:
+                        continue
+                else:
+                    new_sl = entry_price - self.breakeven_buffer
+                    # Only update if new SL is better (lower for sells)
+                    if new_sl >= current_sl:
+                        continue
+                
+                logger.info(f"🔒 Breakeven Trigger: Ticket {ticket} at {current_rr:.2f}R. Moving SL from {current_sl:.2f} to {new_sl:.2f}")
+                
+                req = {
+                    "action": self.adapter.TRADE_ACTION_SLTP,
+                    "position": ticket,
+                    "sl": new_sl,
+                    "tp": current_tp,
+                    "symbol": self.symbol
+                }
+                result = self.adapter.order_send(req)
+                
+                # Mark as breakeven applied (even if failed, to avoid spam)
+                self._breakeven_applied.add(ticket)
+
+    def _cleanup_breakeven_tracker(self, positions):
+        """Remove closed positions from breakeven tracker and record experiences."""
+        if not positions:
+            # All positions closed - record experiences for any pending trades
+            if self.online_trainer and hasattr(self.online_trainer, 'pending_trades'):
+                for ticket in list(self.online_trainer.pending_trades.keys()):
+                    self._record_closed_trade_experience(ticket)
+            self._breakeven_applied.clear()
+            return
+            
+        open_tickets = {pos.ticket for pos in positions}
+        closed_tickets = self._breakeven_applied - open_tickets
+        
+        # Record experiences for closed trades
+        if self.online_trainer:
+            for ticket in closed_tickets:
+                self._record_closed_trade_experience(ticket)
+        
+        self._breakeven_applied -= closed_tickets
+        
+    def _record_closed_trade_experience(self, ticket: int):
+        """Record a closed trade for online RL training."""
+        if not self.online_trainer:
+            return
+            
+        if ticket not in self.online_trainer.pending_trades:
+            return
+            
+        try:
+            # Get deal history to find exit price and P&L
+            # MT5: Use history_deals_get
+            from datetime import datetime, timedelta
+            now = datetime.now()
+            from_time = now - timedelta(hours=24)
+            
+            deals = self.adapter.history_deals_get(from_time, now, position=ticket)
+            if deals and len(deals) >= 2:
+                # Find the closing deal (usually last one with this position)
+                close_deal = deals[-1]
+                exit_price = getattr(close_deal, 'price', 0)
+                pnl = getattr(close_deal, 'profit', 0)
+                
+                # Get current market state for next_state
+                data = self.get_market_data(50)
+                if data is not None and len(data) >= 30:
+                    df_prep = self.strategy.prepare_data(data)
+                    next_state = df_prep.iloc[-30:].values.flatten().astype(np.float32)
+                else:
+                    next_state = np.zeros(150, dtype=np.float32)  # Fallback
+                    
+                self.online_trainer.record_trade_close(
+                    ticket=ticket,
+                    exit_price=exit_price,
+                    pnl=pnl,
+                    next_state=next_state
+                )
+                logger.info(f"📚 Recorded closed trade #{ticket}: PnL=${pnl:.2f}")
+                
+        except Exception as e:
+            logger.warning(f"Could not record experience for trade {ticket}: {e}")
 
     def _save_monitor_state(self):
         """Save current state to JSON for dashboard monitoring."""
@@ -395,7 +639,6 @@ class LiveTrader:
                     shutil.move(tmp_path, final_path)
                     break
                 except (PermissionError, OSError):
-                    import time
                     time.sleep(0.1)
             
         except Exception as e:
@@ -444,27 +687,40 @@ class LiveTrader:
                 # 1. State Check ...
                 positions = self.adapter.positions_get(symbol=self.symbol, magic=self.magic_number)
                 
+                # Cleanup breakeven tracker for closed positions
+                self._cleanup_breakeven_tracker(positions)
+                
+                # Count current positions
+                n_positions = len(positions) if positions else 0
+                MAX_SCALP_POSITIONS = 5  # Allow up to 5 scalp positions simultaneously
+                
                 if positions:
                     # MANAGING MODE
+                    # First: Check and apply breakeven for individual positions
+                    self._manage_breakeven(positions)
+                    # Then: Manage pyramid scaling and collective trailing
                     self.manage_pyramid(positions)
-                else:
-                    # HUNTING MODE (Multi-Strategy)
-                    data = self.get_market_data(200) # Increased lookback for indicators
+                
+                # HUNTING MODE: Always check for scalp signals (even with positions open)
+                # But limit total positions to MAX_SCALP_POSITIONS
+                can_open_new = (n_positions < MAX_SCALP_POSITIONS)
+                
+                if can_open_new:
+                    data = self.get_market_data(200) # M5 for breakout strategy
                     if data is not None and not data.empty:
-                        # Check if new bar
+                        # Check if new M5 bar for breakout strategy
                         last_time = data.index[-1]
-                        if self.last_processed_time == last_time:
-                            time.sleep(0.1)
-                            continue
-                            
-                        self.last_processed_time = last_time
+                        new_m5_bar = (self.last_processed_time != last_time)
                         
-                        # 1. Prepare Data
+                        if new_m5_bar:
+                            self.last_processed_time = last_time
+                        
+                        # 1. Prepare Data for M5 strategies (Breakout only)
                         df_prep = self.strategy.prepare_data(data)
                         
-                        # 2. ML Prediction (Model is trained on Breakouts)
+                        # 2. ML Prediction (Model is trained on Breakouts) - only on new M5 bar
                         ml_prob = 0.0
-                        if self.ml_model and self.ml_feature_engineer:
+                        if new_m5_bar and self.ml_model and self.ml_feature_engineer:
                             try:
                                 f_df = self.ml_feature_engineer.prepare_ml_features(df_prep)
                                 last_row = f_df.iloc[[-1]] 
@@ -475,28 +731,45 @@ class LiveTrader:
                         current_idx = len(df_prep) - 1
                         signals = []
 
-                        # 3. Strategy A: London Breakout (Filtered)
-                        if ml_prob > 0.60: # High threshold
+                        # 3. Strategy A: London Breakout (ML Filtered) - only on new M5 bar, and only if NO positions
+                        if n_positions == 0 and new_m5_bar and ml_prob > 0.55:
                             sig_a = self.strategy.generate_signal(df_prep, current_idx, ml_prob)
                             if sig_a: signals.append(('Breakout', sig_a))
 
-                        # 4. Strategy B: Asian Scalping (Rule-Based)
-                        if self.scalp_strategy:
-                            sig_b = self.scalp_strategy.generate_signal(df_prep, current_idx, ml_prob)
-                            if sig_b: signals.append(('Scalp_Rules', sig_b))
+                        # 4. Strategy B: Scalping on M1 (Rule-Based - Fast & Frequent)
+                        # Check cooldown before looking for new scalp signals
+                        scalp_cooldown_ok = (time.time() - self.last_scalp_time) >= self.scalp_cooldown_seconds
+                        
+                        if self.scalp_strategy and scalp_cooldown_ok:
+                            # Get M1 data for faster scalping (check every loop iteration!)
+                            try:
+                                scalp_data = self.get_market_data(100, self.adapter.TIMEFRAME_M1)
+                                if scalp_data is not None and not scalp_data.empty:
+                                    scalp_prep = self.scalp_strategy.prepare_data(scalp_data)
+                                    scalp_idx = len(scalp_prep) - 1
+                                    sig_b = self.scalp_strategy.generate_signal(scalp_prep, scalp_idx, ml_prob)
+                                    if sig_b: 
+                                        signals.append(('Scalp', sig_b))
+                                        logger.info(f"🎯 Scalp Signal Detected! RSI/BB Reversal on M1")
+                            except Exception as e:
+                                import traceback
+                                logger.error(f"Scalp M1 Error: {e}\n{traceback.format_exc()}")
                             
                         # 5. Strategy C: DeepScalper (RL Agent)
-                        if self.rl_agent and self.rl_agent.model:
+                        # TEMPORARILY DISABLED: RL model needs retraining with new observation shape
+                        # The model was trained with 154 features but now has 422 (with transformer embeddings)
+                        # TODO: Retrain RL model with current feature set
+                        rl_enabled = False  # Set to True after retraining
+                        if rl_enabled and self.rl_agent and self.rl_agent.model:
                             # RL needs N bars window
                             # Account state needed
                             try:
                                 # Get Account Info safely
                                 acct = self.adapter.account_info()
                                 bal = acct.balance if acct else 0.0
-                                # Get net position for symbol
+                                # Get net position for symbol (only our magic number)
                                 pos_net = 0.0
-                                # (Assuming positions variable is up to date or fetch fresh)
-                                pos_fresh = self.adapter.positions_get(symbol=self.symbol)
+                                pos_fresh = self.adapter.positions_get(symbol=self.symbol, magic=self.magic_number)
                                 if pos_fresh:
                                     for p in pos_fresh:
                                         if getattr(p, 'type') == 0: pos_net += getattr(p, 'volume')
@@ -507,10 +780,9 @@ class LiveTrader:
                                 # Action Mapping: 0=Hold, 1=Buy, 2=Sell, 3=Close
                                 if action == 1:
                                     # Create LONG Signal equivalent
-                                    # RL doesn't give SL/TP implicitly, we must assign defaults or let it manage
-                                    # For safety, we assign scalping SL/TP
-                                    import pandas as pd
-                                    atr = df_prep.iloc[current_idx]['atr_14']
+                                    # RL doesn't give SL/TP implicitly, we must assign defaults
+                                    # Use 'atr' from london_breakout (always present) or fallback to atr_14
+                                    atr = df_prep.iloc[current_idx].get('atr', df_prep.iloc[current_idx].get('atr_14', 3.0))
                                     close = df_prep.iloc[current_idx]['close']
                                     sl = close - (atr * 1.5)
                                     tp = close + (atr * 2.0)
@@ -519,7 +791,7 @@ class LiveTrader:
                                     
                                 elif action == 2:
                                     # Create SHORT Signal
-                                    atr = df_prep.iloc[current_idx]['atr_14']
+                                    atr = df_prep.iloc[current_idx].get('atr', df_prep.iloc[current_idx].get('atr_14', 3.0))
                                     close = df_prep.iloc[current_idx]['close']
                                     sl = close + (atr * 1.5)
                                     tp = close - (atr * 2.0)
@@ -527,23 +799,31 @@ class LiveTrader:
                                     signals.append(('DeepScalper', tsig))
                                     
                                 elif action == 3:
-                                    # Close All
+                                    # Close All Positions
                                     if pos_fresh:
-                                        for p in pos_fresh:
-                                            # Using MT5Adapter close method if available, or raw order
-                                            # MT5Adapter.close_position(p.ticket) # If implemented
-                                            # For now implementation detail:
-                                            self.execute_trade(1 if p.type==1 else -1, comment="RL Close") # Invert to close? No execute_trade opens.
-                                            # We need a close method.
-                                            pass
+                                        logger.info("🤖 RL Agent: CLOSE ALL signal received")
+                                        self.close_all_positions(comment="RL Close")
                             except Exception as e:
                                 logger.error(f"RL Step Error: {e}")
 
+                        
+                        # Capture state for Online RL Training BEFORE executing any trades
+                        if self.online_trainer and signals:
+                            try:
+                                # State = last 30 rows flattened (features for RL)
+                                self._last_state = df_prep.iloc[-30:].values.flatten().astype(np.float32)
+                            except Exception as e:
+                                logger.debug(f"Could not capture RL state: {e}")
+                                self._last_state = None
                         
                         # Execute Signals
                         for name, signal in signals:
                             logger.info(f"Entry Signal [{name}]! Type: {signal.signal_type} Prob: {ml_prob:.2f}")
                             direction = 1 if signal.signal_type.name == 'LONG' else -1
+                            
+                            # Recalculate volume for compounding (uses current balance)
+                            sl_distance = abs(signal.entry_price - signal.stop_loss)
+                            self.volume = self._calculate_lot_size(sl_distance)
                             
                             # Initial SL Logic (From Signal)
                             sl = signal.stop_loss
@@ -555,14 +835,19 @@ class LiveTrader:
                                 tp_price=tp, 
                                 comment=f"{name} {ml_prob:.2f}"
                             )
-                            # Only take one trade per bar to avoid conflict?
-                            # For now take first valid
+                            
+                            # Update scalp cooldown after trade execution
+                            if name == 'Scalp':
+                                self.last_scalp_time = time.time()
+                                logger.info(f"⏱️ Scalp cooldown started: {self.scalp_cooldown_seconds}s")
+                            # Only take one trade per bar to avoid conflict
                             break 
                     
                 time.sleep(1)
                 
             except Exception as e:
-                logger.error(f"Loop Error: {e}")
+                import traceback
+                logger.error(f"Loop Error: {e}\n{traceback.format_exc()}")
                 time.sleep(5)
                 self.connect() # Reconnect attempt
 

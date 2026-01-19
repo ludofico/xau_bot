@@ -79,7 +79,7 @@ ml_filter:
 
 # Advanced Level 2 & 3 AI
 # NOTA: Abilitare solo quando i modelli sono trainati e pronti
-advanced_ai: false
+advanced_ai: true  # ENABLED: RL Agent, Sentiment LLM, Tick Predictor
 
 # Open Source Mac Bridge (Set true to avoid MetaApi fees)
 use_socket_bridge: false
