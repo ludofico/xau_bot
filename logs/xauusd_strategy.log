@@ -23654,3 +23654,207 @@ AttributeError: 'Series' object has no attribute 'tick_volume'. Did you mean: 'r
 2026-01-19 19:21:36 | INFO     | xauusd_strategy.backtest.monte_carlo:run:253 | Running 10,000 Monte Carlo simulations...
 2026-01-19 19:21:36 | INFO     | xauusd_strategy.backtest.monte_carlo:run:321 | Simulation complete. Prob profit: 98.2%, Prob ruin: 0.0%
 2026-01-19 19:21:36 | INFO     | xauusd_strategy.backtest.monte_carlo:save_results:355 | Results saved to logs/monte_carlo_results.json
+2026-01-26 12:30:51 | WARNING  | xauusd_strategy.strategy.regime_detector:detect:230 | Insufficient data for regime detection
+2026-01-26 12:31:19 | WARNING  | xauusd_strategy.strategy.regime_detector:detect:230 | Insufficient data for regime detection
+2026-01-26 12:33:53 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 12:33:53 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 12:33:53 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 12:33:53 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 12:33:53 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 12:36:02 | WARNING  | xauusd_strategy.strategy.regime_detector:detect:230 | Insufficient data for regime detection
+2026-01-26 12:36:02 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 12:36:02 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 12:36:02 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 12:36:02 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 12:36:02 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 14:17:49 | INFO     | xauusd_strategy.strategy.signal_aggregator:process_signal:158 | Signal rejected: Low confidence 31.0 < 50.0
+2026-01-26 14:17:49 | WARNING  | xauusd_strategy.strategy.signal_aggregator:process_signal:140 | Signal rejected due to news halt: ['NFP HALT']
+2026-01-26 14:17:49 | WARNING  | xauusd_strategy.strategy.signal_aggregator:process_signal:184 | Signal rejected by Risk Manager: ['Circuit Breaker']
+2026-01-26 14:18:32 | WARNING  | xauusd_strategy.strategy.regime_detector:detect:230 | Insufficient data for regime detection
+2026-01-26 14:18:33 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 14:18:33 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 14:18:33 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 14:18:33 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 14:18:33 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 14:18:33 | INFO     | xauusd_strategy.strategy.signal_aggregator:process_signal:158 | Signal rejected: Low confidence 31.0 < 50.0
+2026-01-26 14:18:33 | WARNING  | xauusd_strategy.strategy.signal_aggregator:process_signal:140 | Signal rejected due to news halt: ['NFP HALT']
+2026-01-26 14:18:33 | WARNING  | xauusd_strategy.strategy.signal_aggregator:process_signal:184 | Signal rejected by Risk Manager: ['Circuit Breaker']
+2026-01-26 14:32:38 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:32:38 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:32:38 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:32:38 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:32:38 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:32:38 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:32:38 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:32:38 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:33:20 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:33:20 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:33:20 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:33:20 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:33:20 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:33:20 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:33:20 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:33:20 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:33:56 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:33:56 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:33:56 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:33:56 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:33:56 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:33:56 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:33:56 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:33:56 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:35:03 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:35:03 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:35:03 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:35:39 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:35:39 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:35:39 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:35:39 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:35:39 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:35:39 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:35:39 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:35:39 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:35:39 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:35:39 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:35:39 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:35:39 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:36:17 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:36:17 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:36:17 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:36:17 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:36:17 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:36:17 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:36:17 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:36:17 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:36:17 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:36:17 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:36:17 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:36:17 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:36:17 | INFO     | xauusd_strategy.execution.live_trader:run:632 | Live Trader Started (Architecture 2.0) 🚀
+2026-01-26 14:37:47 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:37:47 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:37:47 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:37:47 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:37:47 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:37:47 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:37:47 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:37:47 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:37:47 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:37:47 | INFO     | xauusd_strategy.execution.live_trader:execute_trade:314 | 📤 Sending Order: 0 0.1 @ 2000.50 SL=1990.00 TP=2020.00
+2026-01-26 14:37:47 | INFO     | xauusd_strategy.execution.live_trader:execute_trade:321 | ✅ Order SUCCESS: Ticket=12345 Deal=67890
+2026-01-26 14:37:47 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:37:47 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:37:47 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:37:47 | INFO     | xauusd_strategy.execution.live_trader:_load_persistence:156 | Restored Persistence: 1 signals already sent today.
+2026-01-26 14:37:47 | INFO     | xauusd_strategy.execution.live_trader:run:632 | Live Trader Started (Architecture 2.0) 🚀
+2026-01-26 14:37:47 | INFO     | xauusd_strategy.execution.live_trader:run:633 | Risk Manager Active: Daily Limit=5.0%
+2026-01-26 14:37:47 | ERROR    | xauusd_strategy.execution.live_trader:_save_monitor_state:626 | Dashboard State Save Error: 'RiskManager' object has no attribute 'daily_stats'
+2026-01-26 14:37:47 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 14:37:47 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 14:37:47 | ERROR    | xauusd_strategy.execution.live_trader:run:772 | Run Loop Error: 'RegimeDetector' object has no attribute 'detect_regime'
+Traceback (most recent call last):
+  File "/Users/ludovicovalenzano/Desktop/ludo/trading1/src/xauusd_strategy/execution/live_trader.py", line 687, in run
+    regime_analysis = self.regime_detector.detect_regime(data_dict['1d'])
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'RegimeDetector' object has no attribute 'detect_regime'
+
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.execution.live_trader:_load_persistence:156 | Restored Persistence: 1 signals already sent today.
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.execution.live_trader:_load_persistence:156 | Restored Persistence: 1 signals already sent today.
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.execution.live_trader:_load_persistence:156 | Restored Persistence: 1 signals already sent today.
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.execution.live_trader:execute_trade:314 | 📤 Sending Order: 0 0.1 @ 2000.50 SL=1990.00 TP=2020.00
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.execution.live_trader:execute_trade:321 | ✅ Order SUCCESS: Ticket=12345 Deal=67890
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.execution.live_trader:_load_persistence:156 | Restored Persistence: 2 signals already sent today.
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.execution.live_trader:run:632 | Live Trader Started (Architecture 2.0) 🚀
+2026-01-26 14:39:07 | INFO     | xauusd_strategy.execution.live_trader:run:633 | Risk Manager Active: Daily Limit=5.0%
+2026-01-26 14:39:08 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 14:39:08 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 14:39:08 | ERROR    | xauusd_strategy.execution.live_trader:run:772 | Run Loop Error: 'MultiTFAggregator' object has no attribute 'analyze'
+Traceback (most recent call last):
+  File "/Users/ludovicovalenzano/Desktop/ludo/trading1/src/xauusd_strategy/execution/live_trader.py", line 693, in run
+    mtf_analysis = self.mtf_aggregator.analyze(data_dict)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MultiTFAggregator' object has no attribute 'analyze'
+
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.execution.live_trader:_load_persistence:156 | Restored Persistence: 2 signals already sent today.
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.execution.live_trader:_load_persistence:156 | Restored Persistence: 2 signals already sent today.
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.execution.live_trader:_load_persistence:156 | Restored Persistence: 2 signals already sent today.
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.execution.live_trader:execute_trade:314 | 📤 Sending Order: 0 0.1 @ 2000.50 SL=1990.00 TP=2020.00
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.execution.live_trader:execute_trade:321 | ✅ Order SUCCESS: Ticket=12345 Deal=67890
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.execution.live_trader:_load_persistence:156 | Restored Persistence: 3 signals already sent today.
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.execution.live_trader:run:632 | Live Trader Started (Architecture 2.0) 🚀
+2026-01-26 14:45:53 | INFO     | xauusd_strategy.execution.live_trader:run:633 | Risk Manager Active: Daily Limit=5.0%
+2026-01-26 14:45:53 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 14:45:53 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 14:45:54 | ERROR    | xauusd_strategy.execution.live_trader:run:778 | Run Loop Error: 'LiveTrader' object has no attribute 'last_scalp_time'
+Traceback (most recent call last):
+  File "/Users/ludovicovalenzano/Desktop/ludo/trading1/src/xauusd_strategy/execution/live_trader.py", line 736, in run
+    scalp_cooldown_ok = (current_ts - self.last_scalp_time) >= self.scalp_cooldown_seconds
+                                      ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'LiveTrader' object has no attribute 'last_scalp_time'
+
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.execution.live_trader:_load_persistence:159 | Restored Persistence: 3 signals already sent today.
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.execution.live_trader:_load_persistence:159 | Restored Persistence: 3 signals already sent today.
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.execution.live_trader:_load_persistence:159 | Restored Persistence: 3 signals already sent today.
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.execution.live_trader:execute_trade:317 | 📤 Sending Order: 0 0.1 @ 2000.50 SL=1990.00 TP=2020.00
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.execution.live_trader:execute_trade:324 | ✅ Order SUCCESS: Ticket=12345 Deal=67890
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.execution.live_trader:__init__:57 | Using Native MT5 Adapter 🖥️
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.execution.live_trader:__init__:89 | Initializing Architecture 2.0 Components... 🚀
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.strategy.london_breakout:__init__:203 | LondonBreakoutStrategy initialized: ATR(14), ROC(5), SL=1.5×ATR, TP=2.0×ATR
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.execution.live_trader:_load_persistence:159 | Restored Persistence: 4 signals already sent today.
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.execution.live_trader:run:635 | Live Trader Started (Architecture 2.0) 🚀
+2026-01-26 14:47:09 | INFO     | xauusd_strategy.execution.live_trader:run:636 | Risk Manager Active: Daily Limit=5.0%
+2026-01-26 14:47:10 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 14:47:10 | WARNING  | xauusd_strategy.ai.news_calendar:_scrape_forex_factory:294 | ForexFactory returned status 403
+2026-01-26 14:47:10 | INFO     | xauusd_strategy.execution.live_trader:run:762 | ✅ EXECUTING AGGREGATED SIGNAL: BUY 0.12 lots
+2026-01-26 14:47:10 | INFO     | xauusd_strategy.execution.live_trader:run:763 |    Rationale: ['Integration Test']
+2026-01-26 14:47:10 | INFO     | xauusd_strategy.execution.live_trader:run:764 |    Context: Regime=TRENDING, MTF=BULLISH
+2026-01-26 14:47:10 | INFO     | xauusd_strategy.execution.live_trader:execute_trade:317 | 📤 Sending Order: 0 0.12 @ 2000.50 SL=1995.00 TP=2010.00
+2026-01-26 14:47:10 | INFO     | xauusd_strategy.execution.live_trader:execute_trade:324 | ✅ Order SUCCESS: Ticket=12345 Deal=67890
+2026-01-26 14:47:10 | ERROR    | xauusd_strategy.execution.live_trader:run:781 | Run Loop Error: 
+Traceback (most recent call last):
+  File "/Users/ludovicovalenzano/Desktop/ludo/trading1/src/xauusd_strategy/execution/live_trader.py", line 777, in run
+    time.sleep(1) # 1 second tick
+    ^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py", line 1108, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py", line 1112, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py", line 1167, in _execute_mock_call
+    raise effect
+tests.test_live_trader_integration.LoopBreaker
+

@@ -53,6 +53,7 @@ class TradeSignal:
     asian_low: float
     probability: Optional[float] = None
     timestamp: Optional[pd.Timestamp] = None
+    source: Optional[str] = None
     
     @property
     def risk_reward(self) -> float:
@@ -85,6 +86,7 @@ class TradeSignal:
             'probability': self.probability,
             'timestamp': str(self.timestamp) if self.timestamp else None,
             'risk_reward': self.risk_reward,
+            'source': self.source
         }
 
 
@@ -447,7 +449,8 @@ class LondonBreakoutStrategy:
             asian_high=ref_high, # Storing ref_high in asian_high field
             asian_low=ref_low,   # Storing ref_low in asian_low field
             probability=ml_probability,
-            timestamp=current_time
+            timestamp=current_time,
+            source="LondonBreakout"
         )
         
         logger.debug(

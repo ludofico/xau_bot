@@ -16400,3 +16400,45 @@ AttributeError: 'Series' object has no attribute 'tick_volume'. Did you mean: 'r
 
 2026-01-19 19:21:33 | ERROR    | xauusd_strategy.rl.agent:_load:66 | Failed to load RL Agent: No module named 'numpy._core.numeric'
 
+2026-01-26 14:37:47 | ERROR    | xauusd_strategy.execution.live_trader:_save_monitor_state:626 | Dashboard State Save Error: 'RiskManager' object has no attribute 'daily_stats'
+
+2026-01-26 14:37:47 | ERROR    | xauusd_strategy.execution.live_trader:run:772 | Run Loop Error: 'RegimeDetector' object has no attribute 'detect_regime'
+Traceback (most recent call last):
+  File "/Users/ludovicovalenzano/Desktop/ludo/trading1/src/xauusd_strategy/execution/live_trader.py", line 687, in run
+    regime_analysis = self.regime_detector.detect_regime(data_dict['1d'])
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'RegimeDetector' object has no attribute 'detect_regime'
+
+
+2026-01-26 14:39:08 | ERROR    | xauusd_strategy.execution.live_trader:run:772 | Run Loop Error: 'MultiTFAggregator' object has no attribute 'analyze'
+Traceback (most recent call last):
+  File "/Users/ludovicovalenzano/Desktop/ludo/trading1/src/xauusd_strategy/execution/live_trader.py", line 693, in run
+    mtf_analysis = self.mtf_aggregator.analyze(data_dict)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MultiTFAggregator' object has no attribute 'analyze'
+
+
+2026-01-26 14:45:54 | ERROR    | xauusd_strategy.execution.live_trader:run:778 | Run Loop Error: 'LiveTrader' object has no attribute 'last_scalp_time'
+Traceback (most recent call last):
+  File "/Users/ludovicovalenzano/Desktop/ludo/trading1/src/xauusd_strategy/execution/live_trader.py", line 736, in run
+    scalp_cooldown_ok = (current_ts - self.last_scalp_time) >= self.scalp_cooldown_seconds
+                                      ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'LiveTrader' object has no attribute 'last_scalp_time'
+
+
+2026-01-26 14:47:10 | ERROR    | xauusd_strategy.execution.live_trader:run:781 | Run Loop Error: 
+Traceback (most recent call last):
+  File "/Users/ludovicovalenzano/Desktop/ludo/trading1/src/xauusd_strategy/execution/live_trader.py", line 777, in run
+    time.sleep(1) # 1 second tick
+    ^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py", line 1108, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py", line 1112, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py", line 1167, in _execute_mock_call
+    raise effect
+tests.test_live_trader_integration.LoopBreaker
+
+

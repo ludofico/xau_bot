@@ -15,10 +15,14 @@ from xauusd_strategy.config.settings import Settings
 from xauusd_strategy.strategy.london_breakout import LondonBreakoutStrategy, TradeSignal, SignalType
 from xauusd_strategy.strategy.asian_scalp import AsianScalpingStrategy
 from xauusd_strategy.ml.model import MLProbabilityFilter
-# from xauusd_strategy.rl.agent import DeepScalperAgent
-# from xauusd_strategy.ai.sentiment import SentimentAnalyst
-# from xauusd_strategy.ml.embeddings import TransformerEmbedder
-# from xauusd_strategy.ml.tick_model import TickPredictor
+
+# New Architecture Components
+from xauusd_strategy.ai.news_calendar import NewsCalendar, NewsImpact
+from xauusd_strategy.strategy.regime_detector import RegimeDetector, MarketRegime, RegimeAnalysis
+from xauusd_strategy.strategy.multi_tf_aggregator import MultiTFAggregator, Timeframe
+from xauusd_strategy.risk.risk_manager import RiskManager, RiskInfo
+from xauusd_strategy.strategy.signal_aggregator import SignalAggregator, AggregatedSignal
+
 from xauusd_strategy.utils.logger import get_logger
 
 # Import Adapters
@@ -28,15 +32,12 @@ from xauusd_strategy.execution.socket_adapter import SocketAdapter
 
 logger = get_logger("LiveTrader")
 
-from xauusd_strategy.execution.safety import SafetyMonitor
-
 class LiveTrader:
     def __init__(self, config_path: str = "config/aggressive.yaml"):
         self.settings = Settings.from_yaml(Path(config_path))
         self.symbol = "XAUUSD"
         self.magic_number = 999
         # Changed timeframe to use native_mt5.TIMEFRAME_M5 as per instruction's intent
-        # and to align with the UnifiedNativeAdapter's use of native_mt5.
         self.timeframe = native_mt5.TIMEFRAME_M5 
         
         # Initialize Adapter (Priority: cTrader > Socket Bridge > MetaApi > Native)
@@ -64,6 +65,8 @@ class LiveTrader:
                     # Constants
                     self.TIMEFRAME_M1 = self.lib.TIMEFRAME_M1
                     self.TIMEFRAME_M5 = self.lib.TIMEFRAME_M5
+                    self.TIMEFRAME_H1 = self.lib.TIMEFRAME_H1
+                    self.TIMEFRAME_D1 = self.lib.TIMEFRAME_D1
                     self.ORDER_TYPE_BUY = self.lib.ORDER_TYPE_BUY
                     self.ORDER_TYPE_SELL = self.lib.ORDER_TYPE_SELL
                     self.TRADE_ACTION_DEAL = self.lib.TRADE_ACTION_DEAL
@@ -76,87 +79,72 @@ class LiveTrader:
                 def symbol_info_tick(self, *args): return self.lib.symbol_info_tick(*args)
                 def symbol_info(self, *args): return self.lib.symbol_info(*args)
                 def positions_get(self, **kwargs): return self.lib.positions_get(**kwargs)
+                def history_deals_get(self, *args, **kwargs): return self.lib.history_deals_get(*args, **kwargs)
                 def account_info(self): return self.lib.account_info()
                 def order_send(self, req): return self.wrapper.order_send(req)
             
             self.adapter = UnifiedNativeAdapter()
         
-        # Components
-        self.safety = SafetyMonitor(self.settings, adapter=self.adapter)
+        # --- NEW ARCHITECTURE INITIALIZATION ---
+        logger.info("Initializing Architecture 2.0 Components... 🚀")
+        
+        # 1. News Calendar (Sentiment Engine)
+        self.news_calendar = NewsCalendar()
+
+        # self.news_calendar.update() # Can be slow, do async or non-blocking in run
+        
+        # 2. Regime Detector
+        self.regime_detector = RegimeDetector()
+        
+        # 3. Multi-TF Aggregator
+        self.mtf_aggregator = MultiTFAggregator()
+        
+        # 4. Risk Manager v2 (Replaces SafetyMonitor)
+        # Using settings from config if available, else defaults
+        self.risk_manager = RiskManager(
+            initial_balance=getattr(self.settings.risk, 'initial_balance', 250.0),
+            base_risk_pct=getattr(self.settings.risk, 'risk_per_trade_pct', 3.0),
+            max_daily_drawdown_pct=getattr(self.settings.risk, 'max_daily_loss_pct', 8.0),
+            max_trades_per_day=getattr(self.settings.risk, 'max_daily_trades', 10),
+        )
+        
+        # 5. Signal Aggregator
+        self.signal_aggregator = SignalAggregator(
+            risk_manager=self.risk_manager,
+            min_confidence=60.0 # Configurable
+        )
+        
+        # Strategies
+        self.strategy_london = LondonBreakoutStrategy(settings=self.settings)
+        self.strategy_asian = AsianScalpingStrategy(settings=self.settings)
+        
+        # Legacy/Support components
         self.ml_model = self._load_ml_model()
-        self.strategy = LondonBreakoutStrategy(settings=self.settings)
-        self.scalp_strategy = AsianScalpingStrategy(settings=self.settings)
-        
-        # Advanced Level 2 & 3 Brains (Optional via Config)
-        self.use_advanced_ai = getattr(self.settings, 'advanced_ai', False)
-        if self.use_advanced_ai:
-            logger.info("Initializing Advanced AI Suite (Level 2 & 3) 🧠🚀")
-            # Lazy imports to prevent segfaults on Mac (Torch vs MetaApi conflict)
-            from xauusd_strategy.ai.sentiment import SentimentAnalyst
-            from xauusd_strategy.ml.embeddings import TransformerEmbedder
-            from xauusd_strategy.ml.tick_model import TickPredictor
-            from xauusd_strategy.rl.agent import DeepScalperAgent
-            from xauusd_strategy.ml.online_trainer import OnlineRLTrainer
-            
-            self.transformer_brain = TransformerEmbedder()
-            self.sentiment_analyst = SentimentAnalyst()
-            self.tick_predictor = TickPredictor()
-            self.rl_agent = DeepScalperAgent()
-            
-            # Online RL Training for real-time learning
-            self.online_trainer = OnlineRLTrainer(
-                self.rl_agent,
-                buffer_size=1000,
-                min_experiences=10,
-                update_frequency=10  # Update every 10 closed trades
-            )
-            logger.info("🎓 Online RL Training enabled - agent will learn from live trades")
-        else:
-            self.transformer_brain = None
-            self.sentiment_analyst = None
-            self.tick_predictor = None
-            self.rl_agent = None
-            self.online_trainer = None
-        
-        # Pyramiding State
-        self.initial_sl_dist = 2.5 # $
-        self.step_points = 250     # 250 points = $2.5
-        self.max_layers = 4
-        
-        # Dynamic Volume Calculation for Doubling Potential
-        # With €250 balance, 3% risk = €7.5/trade
-        # SL of $2.5 on XAUUSD = 250 points = €2.15 per 0.01 lot
-        # Volume = Risk / (SL_points * point_value)
-        self.base_risk_pct = getattr(self.settings.risk, 'risk_per_trade_pct', 3.0) / 100
-        self.volume = self._calculate_lot_size()
-        logger.info(f"💰 Dynamic Volume: {self.volume} lots (Risk: {self.base_risk_pct*100:.1f}%)")
-        
-        # Scalp Cooldown (avoid opening multiple trades on same signal)
-        self.last_scalp_time = 0
-        self.scalp_cooldown_seconds = 30  # Minimum 30 seconds between scalp entries
-        
-        # Breakeven Settings (from strategy or default)
-        self.breakeven_at_rr = getattr(self.strategy, 'breakeven_at_rr', 1.0)
-        self.breakeven_buffer = 0.30  # $0.30 buffer above entry for spread protection (was 0.10)
-        self._breakeven_applied = set()  # Track tickets that already have breakeven applied
-        self._last_state = None  # Last market state for Online RL Training
-        # Persistence
-        self.persistence_path = Path("monitor/persistence.json")
-        self.signals_today = 0
-        self.last_processed_time = None  # Track last candle time to avoid duplicate processing
-        self._last_state_save = 0  # Throttle state saving
-        self._state_save_interval = 30  # Save state every 30 seconds
-        self._load_persistence()
-        
-        # Pre-initialize ML Feature Engineer (avoid recreation each loop)
         self.ml_feature_engineer = None
         if self.ml_model:
             from xauusd_strategy.ml.features import MLFeatureEngineer
-            self.ml_feature_engineer = MLFeatureEngineer(
-                use_transformers=(self.transformer_brain is not None)
-            )
-            if self.transformer_brain:
-                self.ml_feature_engineer._embedder = self.transformer_brain
+            self.ml_feature_engineer = MLFeatureEngineer(use_transformers=False)
+
+        # Advanced AI placeholders (disabled by default in this refactor unless explicitly needed)
+        self.use_advanced_ai = False 
+        self.online_trainer = None
+
+        # State tracking
+        self.initial_sl_dist = 2.5 
+        self.breakeven_at_rr = getattr(self.strategy_london, 'breakeven_at_rr', 1.0)
+        self.breakeven_buffer = 0.30
+        self._breakeven_applied = set()
+        
+        # Persistence
+        self.persistence_path = Path("monitor/persistence.json")
+        self.signals_today = 0
+        self.last_processed_time = None
+        self._last_state_save = 0
+        self._state_save_interval = 30
+        self.last_scalp_time = 0
+        self.scalp_cooldown_seconds = 300
+        
+        self._load_persistence()
         
     def _load_persistence(self):
         """Restore state from file to handle restarts during trading hours."""
@@ -272,7 +260,29 @@ class LiveTrader:
             df.rename(columns={'tick_volume': 'volume'}, inplace=True)
         return df
 
-    def execute_trade(self, signal_type, sl_price=0.0, tp_price=0.0, comment=""):
+    def _fetch_multi_tf_data(self, n_bars=200):
+        """Fetch data for multiple timeframes."""
+        data_dict = {}
+        
+        # M1 (For Scalping)
+        m1 = self.get_market_data(n_bars, self.adapter.TIMEFRAME_M1)
+        if m1 is not None: data_dict['1m'] = m1
+        
+        # M5 (For London Breakout / Primary)
+        m5 = self.get_market_data(n_bars, self.adapter.TIMEFRAME_M5)
+        if m5 is not None: data_dict['5m'] = m5
+        
+        # H1 (For Trend Context)
+        h1 = self.get_market_data(n_bars, self.adapter.TIMEFRAME_H1)
+        if h1 is not None: data_dict['1h'] = h1
+        
+        # D1 (For Daily Bias)
+        d1 = self.get_market_data(n_bars, self.adapter.TIMEFRAME_D1)
+        if d1 is not None: data_dict['1d'] = d1
+        
+        return data_dict
+
+    def execute_trade(self, signal_type, sl_price=0.0, tp_price=0.0, comment="", volume=None):
         tick = self.adapter.symbol_info_tick(self.symbol)
         if not tick: return
         
@@ -284,40 +294,16 @@ class LiveTrader:
             logger.warning(f"Spread Too High: {spread:.2f} > {max_spread:.2f}. SKIPPING TRADE.")
             return
 
-        # LEVEL 3: TICK SNIPING (Entry Optimization)
-        if self.use_advanced_ai and self.tick_predictor:
-            logger.info("Sniping Entry (Waiting for favorable tick prediction)...")
-            sniped = False
-            for _ in range(20): # Wait up to 2 seconds (20 * 100ms)
-                tick_hist = self.get_market_data(20) # Simplified: uses 1m/5m but should be tick
-                # In real MT5 we'd use copy_ticks_from, here we mock it with recent data
-                # Use 'volume' column (real_volume may not exist, tick_volume may not exist)
-                vol_col = 'volume' if 'volume' in tick_hist.columns else 'real_volume' if 'real_volume' in tick_hist.columns else None
-                if vol_col:
-                    sim_ticks = [(r.close, r[vol_col]) for _, r in tick_hist.iterrows()]
-                else:
-                    sim_ticks = [(r.close, 100) for _, r in tick_hist.iterrows()]  # Fallback
-                prediction = self.tick_predictor.predict_delta(sim_ticks)
-                
-                # If buying, we want a positive predicted delta (Up)
-                # If selling, we want a negative predicted delta (Down)
-                if (signal_type == 1 and prediction > 0) or (signal_type == -1 and prediction < 0):
-                    logger.info(f"Sniper Target Locked: Prediction={prediction:.4f}")
-                    sniped = True
-                    break
-                time.sleep(0.1)
-            if not sniped:
-                logger.warning("Sniping timed out. Executing at current price.")
+        # Use passed volume or default to self.volume
+        trade_volume = volume if volume else self.volume
 
         action_type = self.adapter.ORDER_TYPE_BUY if signal_type == 1 else self.adapter.ORDER_TYPE_SELL
-        # Refresh tick for entry
-        tick = self.adapter.symbol_info_tick(self.symbol)
         price = tick.ask if signal_type == 1 else tick.bid
         
         request = {
             "action": self.adapter.TRADE_ACTION_DEAL,
             "symbol": self.symbol,
-            "volume": self.volume,
+            "volume": trade_volume,
             "type": action_type,
             "price": price,
             "sl": sl_price,
@@ -328,7 +314,7 @@ class LiveTrader:
             "type_filling": self.adapter.ORDER_FILLING_IOC,
         }
         
-        logger.info(f"📤 Sending Order: {action_type} {self.volume} @ {price:.2f} SL={sl_price:.2f} TP={tp_price:.2f}")
+        logger.info(f"📤 Sending Order: {action_type} {trade_volume} @ {price:.2f} SL={sl_price:.2f} TP={tp_price:.2f}")
         result = self.adapter.order_send(request) # Safe execution with retries
         
         if result is None:
@@ -347,7 +333,7 @@ class LiveTrader:
                         action=1 if signal_type == 1 else 2,  # 1=Buy, 2=Sell
                         entry_price=price,
                         direction=signal_type,
-                        volume=self.volume
+                        volume=trade_volume
                     )
             else:
                 logger.error(f"❌ Order FAILED: retcode={result.retcode} comment={result.comment}")
@@ -560,7 +546,7 @@ class LiveTrader:
                 # Get current market state for next_state
                 data = self.get_market_data(50)
                 if data is not None and len(data) >= 30:
-                    df_prep = self.strategy.prepare_data(data)
+                    df_prep = self.strategy_london.prepare_data(data)
                     next_state = df_prep.iloc[-30:].values.flatten().astype(np.float32)
                 else:
                     next_state = np.zeros(150, dtype=np.float32)  # Fallback
@@ -596,12 +582,9 @@ class LiveTrader:
                     }
                     pos_list.append(pos_data)
 
-            # Calculate Daily PnL
-            daily_pnl_pct = 0.0
-            if self.safety.initial_day_equity > 0:
-                pnl = account.equity - self.safety.initial_day_equity
-                daily_pnl_pct = (pnl / self.safety.initial_day_equity)
-
+            # Calculate Daily PnL using RiskManager
+            dd_stats = self.risk_manager.get_drawdown_stats()
+            
             state = {
                 'timestamp': time.time(),
                 'last_update': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -611,8 +594,9 @@ class LiveTrader:
                     'profit': account.profit
                 },
                 'risk': {
-                    'daily_pnl_pct': daily_pnl_pct,
-                    'daily_limit': self.safety.max_daily_loss
+                    'daily_pnl': dd_stats.daily_pnl,
+                    'drawdown_pct': dd_stats.current_drawdown_pct,
+                    'daily_limit': self.risk_manager.max_daily_dd
                 },
                 'positions': pos_list
             }
@@ -648,79 +632,94 @@ class LiveTrader:
         if not self.connect():
             return
 
-        logger.info("Live Trader Started (v1.0 Production)...")
-        logger.info(f"Safety Monitor Active: Daily Loss Limit={self.safety.max_daily_loss}%")
+        logger.info("Live Trader Started (Architecture 2.0) 🚀")
+        logger.info(f"Risk Manager Active: Daily Limit={self.risk_manager.max_daily_dd}%")
         
         while True:
             try:
-                # Check for remote STOP signal
+                # 0. Check for remote STOP signal
                 if os.path.exists("monitor/stop.signal"):
                     logger.critical("STOP SIGNAL RECEIVED from Dashboard. Halting.")
-                    # Optional: Close all positions here if desired
                     break
 
-                # Throttled state save (every 30 seconds instead of every loop)
-                current_time = time.time()
-                if current_time - self._last_state_save >= self._state_save_interval:
+                # Throttled state save (every 30 seconds)
+                current_time_sec = time.time()
+                if current_time_sec - self._last_state_save >= self._state_save_interval:
                     self._save_monitor_state()
-                    self._last_state_save = current_time
+                    self._last_state_save = current_time_sec
+
+                # 1. Update State & Risk
+                account = self.adapter.account_info()
+                if account:
+                    self.risk_manager.update_equity(account.equity)
                 
-                # 0. Safety Checks
-                if not self.safety.check_risk_limits():
-                    logger.critical("Risk Limit Hit. Shutting Down.")
-                    break
+                positions = self.adapter.positions_get(symbol=self.symbol, magic=self.magic_number)
+                self._cleanup_breakeven_tracker(positions)
+                n_positions = len(positions) if positions else 0
                 
-                if not self.safety.check_market_conditions(self.symbol):
-                    time.sleep(5)
+                # Check Circuit Breaker
+                # RiskManager tracks this internally but we should respect global halts
+                status = self.risk_manager.get_status()
+                if not status['can_trade']:
+                    logger.warning(f"Circuit Breaker TRIPPED: {status['circuit_status']}. Pausing trading...")
+                    time.sleep(60)
                     continue
 
-                # LEVEL 3: SENTIMENT ANALYST (News Circuit Breaker)
-                if self.use_advanced_ai and self.sentiment_analyst:
-                    risk_multiplier = self._check_news_sentiment()
-                    if risk_multiplier == 0.0:
-                        logger.critical("🛑 SENTINEL HALT: High-Impact News Detected. Trading Paused.")
-                        time.sleep(60)
-                        continue
-                    elif risk_multiplier < 1.0:
-                        logger.warning(f"⚠️ SENTINEL CAUTION: News risk detected. Multiplier: {risk_multiplier}")
-
-                # 1. State Check ...
-                positions = self.adapter.positions_get(symbol=self.symbol, magic=self.magic_number)
-                
-                # Cleanup breakeven tracker for closed positions
-                self._cleanup_breakeven_tracker(positions)
-                
-                # Count current positions
-                n_positions = len(positions) if positions else 0
-                MAX_SCALP_POSITIONS = 5  # Allow up to 5 scalp positions simultaneously
-                
+                # 2. Manage Open Positions (Pyramiding, Breakeven)
                 if positions:
-                    # MANAGING MODE
-                    # First: Check and apply breakeven for individual positions
                     self._manage_breakeven(positions)
-                    # Then: Manage pyramid scaling and collective trailing
                     self.manage_pyramid(positions)
+
+                # 3. Fetch Data (Multi-Timeframe)
+                # We fetch enough bars for indicators
+                data_dict = self._fetch_multi_tf_data(n_bars=200)
+                if not data_dict:
+                    time.sleep(5)
+                    continue
+                    
+                # 4. Update Context Analysis
+                # News
+                news_impact = self.news_calendar.assess_trading_impact()
+                if news_impact.halt_trading:
+                    logger.critical(f"NEWS HALT: {news_impact.notes}. Pausing...")
+                    time.sleep(60)
+                    continue
                 
-                # HUNTING MODE: Always check for scalp signals (even with positions open)
-                # But limit total positions to MAX_SCALP_POSITIONS
-                can_open_new = (n_positions < MAX_SCALP_POSITIONS)
+                # Regime (Update on Daily data)
+                if '1d' in data_dict:
+                    regime_analysis = self.regime_detector.detect(data_dict['1d'])
+                else:
+                    # Fallback default
+                    regime_analysis = RegimeAnalysis(MarketRegime.RANGING, 0.5, 25, 50, 0, "normal")
+
+                # Multi-TF Analysis
+                mtf_data = {}
+                if '1m' in data_dict: mtf_data[Timeframe.M1] = data_dict['1m']
+                if '5m' in data_dict: mtf_data[Timeframe.M5] = data_dict['5m']
+                if '1h' in data_dict: mtf_data[Timeframe.H1] = data_dict['1h']
+                if '1d' in data_dict: mtf_data[Timeframe.D1] = data_dict['1d']
+
+                mtf_analysis = self.mtf_aggregator.aggregate(mtf_data)
                 
-                if can_open_new:
-                    data = self.get_market_data(200) # M5 for breakout strategy
-                    if data is not None and not data.empty:
-                        # Check if new M5 bar for breakout strategy
-                        last_time = data.index[-1]
-                        new_m5_bar = (self.last_processed_time != last_time)
+                # 5. Signal Generation
+                raw_signals = []
+                # current_dt = datetime.now()
+                
+                # A. London Breakout (M5)
+                # Only run if we have fresh M5 bar
+                if '5m' in data_dict and not data_dict['5m'].empty:
+                    m5_df = data_dict['5m']
+                    last_time = m5_df.index[-1]
+                    
+                    if self.last_processed_time != last_time:
+                        self.last_processed_time = last_time
                         
-                        if new_m5_bar:
-                            self.last_processed_time = last_time
+                        # Prepare Data & Features
+                        df_prep = self.strategy_london.prepare_data(m5_df)
                         
-                        # 1. Prepare Data for M5 strategies (Breakout only)
-                        df_prep = self.strategy.prepare_data(data)
-                        
-                        # 2. ML Prediction (Model is trained on Breakouts) - only on new M5 bar
+                        # ML Prediction
                         ml_prob = 0.0
-                        if new_m5_bar and self.ml_model and self.ml_feature_engineer:
+                        if self.ml_model and self.ml_feature_engineer:
                             try:
                                 f_df = self.ml_feature_engineer.prepare_ml_features(df_prep)
                                 last_row = f_df.iloc[[-1]] 
@@ -728,143 +727,61 @@ class LiveTrader:
                             except Exception as e:
                                 logger.error(f"ML Predict Error: {e}")
                         
-                        current_idx = len(df_prep) - 1
-                        signals = []
+                        # Generate Signal
+                        idx = len(df_prep) - 1
+                        sig = self.strategy_london.generate_signal(df_prep, idx, ml_prob)
+                        if sig:
+                            raw_signals.append(sig)
 
-                        # 3. Strategy A: London Breakout (ML Filtered) - only on new M5 bar, and only if NO positions
-                        if n_positions == 0 and new_m5_bar and ml_prob > 0.55:
-                            sig_a = self.strategy.generate_signal(df_prep, current_idx, ml_prob)
-                            if sig_a: signals.append(('Breakout', sig_a))
-
-                        # 4. Strategy B: Scalping on M1 (Rule-Based - Fast & Frequent)
-                        # Check cooldown before looking for new scalp signals
-                        scalp_cooldown_ok = (time.time() - self.last_scalp_time) >= self.scalp_cooldown_seconds
-                        
-                        if self.scalp_strategy and scalp_cooldown_ok:
-                            # Get M1 data for faster scalping (check every loop iteration!)
-                            try:
-                                scalp_data = self.get_market_data(100, self.adapter.TIMEFRAME_M1)
-                                if scalp_data is not None and not scalp_data.empty:
-                                    scalp_prep = self.scalp_strategy.prepare_data(scalp_data)
-                                    scalp_idx = len(scalp_prep) - 1
-                                    sig_b = self.scalp_strategy.generate_signal(scalp_prep, scalp_idx, ml_prob)
-                                    if sig_b: 
-                                        signals.append(('Scalp', sig_b))
-                                        logger.info(f"🎯 Scalp Signal Detected! RSI/BB Reversal on M1")
-                            except Exception as e:
-                                import traceback
-                                logger.error(f"Scalp M1 Error: {e}\n{traceback.format_exc()}")
-                            
-                        # 5. Strategy C: DeepScalper (RL Agent)
-                        # TEMPORARILY DISABLED: RL model needs retraining with new observation shape
-                        # The model was trained with 154 features but now has 422 (with transformer embeddings)
-                        # TODO: Retrain RL model with current feature set
-                        rl_enabled = False  # Set to True after retraining
-                        if rl_enabled and self.rl_agent and self.rl_agent.model:
-                            # RL needs N bars window
-                            # Account state needed
-                            try:
-                                # Get Account Info safely
-                                acct = self.adapter.account_info()
-                                bal = acct.balance if acct else 0.0
-                                # Get net position for symbol (only our magic number)
-                                pos_net = 0.0
-                                pos_fresh = self.adapter.positions_get(symbol=self.symbol, magic=self.magic_number)
-                                if pos_fresh:
-                                    for p in pos_fresh:
-                                        if getattr(p, 'type') == 0: pos_net += getattr(p, 'volume')
-                                        else: pos_net -= getattr(p, 'volume')
-                                
-                                action = self.rl_agent.predict(df_prep, bal, pos_net)
-                                
-                                # Action Mapping: 0=Hold, 1=Buy, 2=Sell, 3=Close
-                                if action == 1:
-                                    # Create LONG Signal equivalent
-                                    # RL doesn't give SL/TP implicitly, we must assign defaults
-                                    # Use 'atr' from london_breakout (always present) or fallback to atr_14
-                                    atr = df_prep.iloc[current_idx].get('atr', df_prep.iloc[current_idx].get('atr_14', 3.0))
-                                    close = df_prep.iloc[current_idx]['close']
-                                    sl = close - (atr * 1.5)
-                                    tp = close + (atr * 2.0)
-                                    tsig = TradeSignal(SignalType.LONG, close, sl, tp, atr, 0, 0, 0, ml_prob, df_prep.index[current_idx])
-                                    signals.append(('DeepScalper', tsig))
-                                    
-                                elif action == 2:
-                                    # Create SHORT Signal
-                                    atr = df_prep.iloc[current_idx].get('atr', df_prep.iloc[current_idx].get('atr_14', 3.0))
-                                    close = df_prep.iloc[current_idx]['close']
-                                    sl = close + (atr * 1.5)
-                                    tp = close - (atr * 2.0)
-                                    tsig = TradeSignal(SignalType.SHORT, close, sl, tp, atr, 0, 0, 0, ml_prob, df_prep.index[current_idx])
-                                    signals.append(('DeepScalper', tsig))
-                                    
-                                elif action == 3:
-                                    # Close All Positions
-                                    if pos_fresh:
-                                        logger.info("🤖 RL Agent: CLOSE ALL signal received")
-                                        self.close_all_positions(comment="RL Close")
-                            except Exception as e:
-                                logger.error(f"RL Step Error: {e}")
-
-                        
-                        # Capture state for Online RL Training BEFORE executing any trades
-                        if self.online_trainer and signals:
-                            try:
-                                # State = last 30 rows flattened (features for RL)
-                                self._last_state = df_prep.iloc[-30:].values.flatten().astype(np.float32)
-                            except Exception as e:
-                                logger.debug(f"Could not capture RL state: {e}")
-                                self._last_state = None
-                        
-                        # Execute Signals
-                        for name, signal in signals:
-                            logger.info(f"Entry Signal [{name}]! Type: {signal.signal_type} Prob: {ml_prob:.2f}")
-                            direction = 1 if signal.signal_type.name == 'LONG' else -1
-                            
-                            # Recalculate volume for compounding (uses current balance)
-                            sl_distance = abs(signal.entry_price - signal.stop_loss)
-                            self.volume = self._calculate_lot_size(sl_distance)
-                            
-                            # Initial SL Logic (From Signal)
-                            sl = signal.stop_loss
-                            tp = signal.take_profit
-                            
-                            self.execute_trade(
-                                direction, 
-                                sl_price=sl, 
-                                tp_price=tp, 
-                                comment=f"{name} {ml_prob:.2f}"
-                            )
-                            
-                            # Update scalp cooldown after trade execution
-                            if name == 'Scalp':
-                                self.last_scalp_time = time.time()
-                                logger.info(f"⏱️ Scalp cooldown started: {self.scalp_cooldown_seconds}s")
-                            # Only take one trade per bar to avoid conflict
-                            break 
-                    
-                time.sleep(1)
+                # B. Asian Scalp (M1)
+                # Run more frequently (every loop, but check cooldown)
+                current_ts = time.time()
+                scalp_cooldown_ok = (current_ts - self.last_scalp_time) >= self.scalp_cooldown_seconds
+                if '1m' in data_dict and scalp_cooldown_ok and self.strategy_asian:
+                    m1_df = data_dict['1m']
+                    m1_prep = self.strategy_asian.prepare_data(m1_df)
+                    m1_idx = len(m1_prep) - 1
+                    sig_scalp = self.strategy_asian.generate_signal(m1_prep, m1_idx, 0.0) # No ML for M1 yet
+                    if sig_scalp:
+                        raw_signals.append(sig_scalp)
+                        self.last_scalp_time = current_ts # Reset cooldown
                 
+                # 6. Aggregation & Execution
+                for signal in raw_signals:
+                    # Process via Signal Aggregator
+                    agg_signal = self.signal_aggregator.process_signal(
+                        signal=signal,
+                        regime_analysis=regime_analysis,
+                        multi_tf_analysis=mtf_analysis,
+                        news_impact=news_impact,
+                        current_equity=account.equity,
+                        current_positions=n_positions
+                    )
+                    
+                    if agg_signal:
+                        logger.info(f"✅ EXECUTING AGGREGATED SIGNAL: {agg_signal.direction} {agg_signal.position_size} lots")
+                        logger.info(f"   Rationale: {agg_signal.rationale}")
+                        logger.info(f"   Context: Regime={agg_signal.market_regime}, MTF={agg_signal.multi_tf_alignment}")
+                        
+                        # Execute
+                        sig_type = 1 if agg_signal.direction == "BUY" else -1
+                        self.execute_trade(
+                            signal_type=sig_type,
+                            sl_price=agg_signal.stop_loss,
+                            tp_price=agg_signal.take_profit,
+                            comment=f"Agg:{agg_signal.confidence_score:.0f}%",
+                            volume=agg_signal.position_size
+                        )
+
+                # Sleep to prevent tight loop
+                time.sleep(1) # 1 second tick
+
             except Exception as e:
                 import traceback
-                logger.error(f"Loop Error: {e}\n{traceback.format_exc()}")
+                logger.error(f"Run Loop Error: {e}\n{traceback.format_exc()}")
                 time.sleep(5)
-                self.connect() # Reconnect attempt
+                self.connect()
 
-    def _check_news_sentiment(self) -> float:
-        """Fetch and analyze news headlines (Mocked for demonstration or uses real scraping)."""
-        # In production, we'd scrape ForexFactory or use an API
-        # For Demo: check if 'news.txt' exists with headlines
-        headlines = []
-        if os.path.exists("news.txt"):
-            with open("news.txt", "r") as f:
-                headlines = [line.strip() for line in f.readlines() if line.strip()]
-        
-        if not headlines:
-            # Silent fallback: assume neutral
-            return 1.0
-            
-        return self.sentiment_analyst.get_news_risk_multiplier(headlines)
 
 if __name__ == "__main__":
     trader = LiveTrader()

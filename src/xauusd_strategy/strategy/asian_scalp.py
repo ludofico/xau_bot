@@ -301,9 +301,10 @@ class AsianScalpingStrategy:
             stop_loss=sl,
             take_profit=tp,
             atr_value=row['atr_14'],
-            roc_value=0,
-            asian_high=0,
-            asian_low=0,
+            roc_value=rsi_slope,  # Using RSI slope as ROC proxy for this strategy
+            asian_high=0.0,
+            asian_low=0.0,
             probability=ml_prob,
-            timestamp=time
+            timestamp=time,
+            source="AsianScalp"
         )

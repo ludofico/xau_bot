@@ -1,14 +1,15 @@
 {
-  "timestamp": 1768831916.3413072,
-  "last_update": "2026-01-19 15:11:56",
+  "timestamp": 1769435229.973788,
+  "last_update": "2026-01-26 14:47:09",
   "account": {
-    "balance": 223.95,
-    "equity": 223.95,
+    "balance": 10000.0,
+    "equity": 10000.0,
     "profit": 0.0
   },
   "risk": {
-    "daily_pnl_pct": 0.0,
-    "daily_limit": 10.0
+    "daily_pnl": 0.0,
+    "drawdown_pct": 0.0,
+    "daily_limit": 5.0
   },
   "positions": []
 }
